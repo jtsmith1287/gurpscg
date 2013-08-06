@@ -11,6 +11,14 @@ class Utilities:
 
     return [i[table[0].index(header)] for i in table[1:]]
 
-  def randWeight(self, arg, dice=3):
+  def randWeight(self, array, dice=3):
+    """Returns a random number simulating a dice roll."""
 
-    return int(sum([random.randint(0, len(arg)-1) for i in xrange(dice)])/dice)
+    return int(sum([random.randint(0, len(array)-1) for i in xrange(dice)])/dice)
+  
+  def randBiDistrib(self, array):
+    """Returns a random number using binomial distribution."""
+    
+    return sum([1 if random.random() < (6.0/9.0) else 0 for i in xrange(len(array))])-1
+
+utils = Utilities()

@@ -5,18 +5,28 @@ Created on Jul 31, 2013
 '''
 
 
-BUILD_TABLE = [["height", "Skinny", "Average", "Overweight", "Fat", "Very Fat"],
-               [(4.4,5.2), (40,80), (60,120), (80,160), (90,180), (120,240)], 
-               [(4.7,5.5), (50,90), (75,135), (100,175), (115,205), (150,270)], 
-               [(4.10,5.8), (60,100), (90,150), (120,195), (135,225), (180,300)], 
-               [(5.1,5.11), (70,110), (105,165), (140,215), (160,250), (210,330)],
-               [(5.3,6.1), (80,120), (115,175), (150,230), (175,265), (230,350)], 
-               [(5.5,6.3), (85,130), (125,195), (165,255), (190,295), (250,390)], 
-               [(5.8,6.6), (95,150), (140,220), (185,290), (210,330), (280,440)], 
-               [(5.11,6.9), (105,165), (155,245), (205,320), (235,370), (310,490)], 
-               [(6.2,7.0), (115,180), (170,270), (225,355), (255,405), (340,540)],
-               [0,         -5,        0,          -1,          -3,       -5     ]]
+BUILD_TABLE = [["Skinny", "Average", "Overweight", "Fat", "Very Fat"],
+               [(40,80),   (60,120),  (80,160),  (90,180),  (120,240)], 
+               [(50,90),   (75,135),  (100,175), (115,205), (150,270)], 
+               [(60,100),  (90,150),  (120,195), (135,225), (180,300)], 
+               [(70,110),  (105,165), (140,215), (160,250), (210,330)],
+               [(80,120),  (115,175), (150,230), (175,265), (230,350)], 
+               [(85,130),  (125,195), (165,255), (190,295), (250,390)], 
+               [(95,150),  (140,220), (185,290), (210,330), (280,440)], 
+               [(105,165), (155,245), (205,320), (235,370), (310,490)], 
+               [(115,180), (170,270), (225,355), (255,405), (340,540)],
+               [-5,        0,         -1,        -3,        -5     ]]
 
+HEIGHT_TABLE = [["height"],
+               [(4.4,5.2)],
+               [(4.7,5.5)],
+               [(4.10,5.8)], 
+               [(5.1,5.11)], 
+               [(5.3,6.1)], 
+               [(5.5,6.3)], 
+               [(5.8,6.6)], 
+               [(5.11,6.9)], 
+               [(6.2,7.0)]]
 
 APPEARANCE_TABLE = [["Horrific", "Monstrous", "Hideous", "Ugly", "Unattractive", "Average", "Attractive", "Handsome", "Very handsome", "Transcendent"],
                     ["You are indescribably monstrous or unspeakably foul, andcannot interact with normal mortals. This gives -6 on reaction rolls. The GM may decide that this trait is supernatural and unavailable to normal characters -24 points",
@@ -36,12 +46,12 @@ APPEARANCE_TABLE = [["Horrific", "Monstrous", "Hideous", "Ugly", "Unattractive",
 WEALTH_TABLE = [["Dead Broke", "Poor", "Struggling", "Average", "Comfortable", "Wealthy", "Filthy Rich", "Multimillionaire"],
                 ["You have no job, no source of income, no money, and no property other than the clothes you are wearing. Either you are unable to work or there are no jobs to be found. -25",
                  "Your starting wealth is only 1/5 of the average for your society. Some jobs are not available to you, and no job you find pays very well. -15",
-                 "Your starting wealth is only 1/2 of the average for your society. Any job is open to you (you can be a Struggling doctor or movie actor), but you don’t earn much. This is appropriate if you are, for instance, a 21st-century student. -10 points.",
-                 "The default wealth level, as explained above. 0 points. Comfortable: You work for a living, but your lifestyle is better than most. Your starting wealth is twice the average. 10 points.",
+                 "Your starting wealth is only 1/2 of the average for your society. Any job is open to you (you can be a Struggling doctor or movie actor), but you don't earn much. This is appropriate if you are, for instance, a 21st-century student. -10 points.",
+                 "The default wealth level. 0 points. Comfortable: You work for a living, but your lifestyle is better than most. Your starting wealth is twice the average. 10 points.",
                  "Your starting wealth is five times average; you live very well indeed. 20 points.",
                  "Your starting wealth is 20 times the average. 30 points",
                  "Your starting wealth is 100 times average. You can buy almost anything you want without considering the cost",
-                 "“Filthy rich” doesn’t even begin to describe your wealth! For every 25 points you spend beyond the 50 points to be Filthy Rich, increase your starting wealth by another factor of 10: Multimillionaire 1 costs 75 points and gives 1,000 times average starting wealth, Multimillionaire 2 costs 100 points gives 10,000 times starting wealth, and so on. 50 points + 25 points/level of Multimillionaire."],
+                 "Filthy rich doesn't even begin to describe your wealth! For every 25 points you spend beyond the 50 points to be Filthy Rich, increase your starting wealth by another factor of 10: Multimillionaire 1 costs 75 points and gives 1,000 times average starting wealth, Multimillionaire 2 costs 100 points gives 10,000 times starting wealth, and so on. 50 points + 25 points/level of Multimillionaire."],
                 [0, .2, .5, 1, 2, 5, 20, 100, 1000],
                 [-25, -15, -10, 0, 10, 20, 30, 50, 75]]
 
