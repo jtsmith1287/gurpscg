@@ -16,9 +16,9 @@ class Utilities:
 
     return int(sum([random.randint(0, len(array)-1) for i in xrange(dice)])/dice)
   
-  def randBiDistrib(self, array):
+  def randBiDistrib(self, array, median):
     """Returns a random number using binomial distribution."""
-    
-    return sum([1 if random.random() < (6.0/9.0) else 0 for i in xrange(len(array))])-1
+    l = len(array)
+    return sum([1 if random.random() < (float(median)/l) else 0 for i in xrange(l)])-1
 
 utils = Utilities()

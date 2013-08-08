@@ -16,7 +16,7 @@ class CharacterBuilder:
   def __init__ (self, points):
   
     self.misc = {"points": points,
-                 "build":  BUILD_TABLE[0][utils.randWeight(BUILD_TABLE[0])],
+                 "build":  BUILD_TABLE[0][utils.randBiDistrib(BUILD_TABLE[0], 2)],
                  "age": random.randint(18, 64),
                  "gender": random.choice(["Male", "Female"])}
     self.basic_attributes = {"ST": 10,
@@ -46,7 +46,7 @@ class CharacterBuilder:
       
     height_options = utils.getColumnFromTable(HEIGHT_TABLE, "height")
     build_options = utils.getColumnFromTable(BUILD_TABLE, self.misc["build"])
-    physical_appearance = APPEARANCE_TABLE[0][utils.randBiDistrib(APPEARANCE_TABLE[0])]
+    physical_appearance = APPEARANCE_TABLE[0][utils.randBiDistrib(APPEARANCE_TABLE[0], 5)]
     appearance_choice = utils.getColumnFromTable(APPEARANCE_TABLE, physical_appearance)
 
     st = self.basic_attributes["ST"]
