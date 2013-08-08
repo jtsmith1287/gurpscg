@@ -86,16 +86,28 @@ class CharacterBuilder:
     self.wealth["status"] = wealth_status
     self.wealth["status_description"] = wealth_details[0]
     self.updatePoints(wealth_details[-1])
+    
+  def calculateMisc(self):
+
+    ST = self.basic_attributes['ST']
+    DX = self.basic_attributes['DX']
+    HT = self.basic_attributes['HT']
+    self.secondary_attributes['basic_speed'] = (HT+DX)/4
+    self.secondary_attributes['SM'] = 0
+    self.secondary_attributes['thrust'] = DAMAGE_TABLE[ST+1][0]
+    self.secondary_attributes['swing'] = DAMAGE_TABLE[ST+1][1]
+    self.secondary_attributes['basic_move'] = int(self.secondary_attributes['basic_speed'])
+    self.secondary_attributes['basic_lift'] = (ST*ST)/5
+    self.secondary_attributes['none'] = 2((ST*ST)/5)
+    self.secondary_attributes['light'] = 4((ST*ST)/5)
+    self.secondary_attributes['medium'] = 6((ST*ST)/5)
+    self.secondary_attributes['heavy'] = 12((ST*ST)/5)
+    self.secondary_attributes['extra_heavy'] = 20((ST*ST)/5)
 
   def build(self):
 
     self.setAppearance()
     self.setWealth()
-    
-
-
-
-
 
 
 
