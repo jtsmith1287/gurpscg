@@ -1,11 +1,11 @@
 '''
 Created on Jul 31, 2013
 
-@author: Justin
- & Theophilus
+@author: Justin & Theophilus
 '''
 
 from tables import *
+from skills import *
 import random
 from utilities import utils
 
@@ -130,12 +130,56 @@ class CharacterBuilder:
     self.secondary_attributes['heavy'] = 12 * ((ST*ST)/5)
     self.secondary_attributes['extra_heavy'] = 20 * ((ST*ST)/5)
 
+  def getPrimaryAttribute(self):
+    """Gets current highest attribute.
+
+       Returns:
+         max_attr: a string of random highest basic_attribute
+    """
+    
+    biggest = max(self.basic_attributes.values())
+    max_attrs = []
+    for stat,value in self.basic_attributes.items():
+      if value >= biggest:
+        max_attrs.append(stat)
+    max_attr =  random.choice(max_attrs)
+
+    return max_attr
+
+  def pickSkill(self):
+
+    skills = SKILLS
+    p_attr = self.getPrimaryAttribute()
+    possible_skills = []
+    good_candidates = []
+    for skill in SKILLS[1:]:
+      if self.misc["skill_category"] in skill[3]:
+        possible_skills.append(skill) # references category of skill
+    for skill in possible_skills:
+      if p_attr == skill[1]: # references attribute of skill
+        possible_skills.append(skill)
+
+    if len(good_candidates) == 0:
+      chosen_skill = random.choice(possible_skills)
+    else:
+      chosen_skill = random.choice(good_candidates)
+    
+    return chosen_skill
 
   def build(self):
 
     self.setAppearance()
     self.setWealth()
-    self.tmpRandomStats()
+    #self.tmpRandomStats()
+
+    self.misc["skill_category"] = random.choice(SKILL_CATEGORIES)
+    self.pickSkill()
+    
+    
+
+
+
+  
     self.calculateMisc()
 
     self.advantages["a_notice"] = "Feature coming soon!"
