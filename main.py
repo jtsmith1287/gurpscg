@@ -35,9 +35,13 @@ handlers = [('/', MainPage)]
 
 application = webapp2.WSGIApplication(handlers, debug=True)
 
+
 if __name__ == "__main__":
-  mergeDicts(charbuilder.CharacterBuilder(100).__dict__)
+  c = mergeDicts(charbuilder.CharacterBuilder(100).__dict__)
   
+  for k,v in c.iteritems():
+    print k, v
+  print
   print "\nApp excecution successful."
   print "You can now run Google App Engine Launcher."
 

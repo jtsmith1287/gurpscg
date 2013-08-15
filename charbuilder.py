@@ -15,7 +15,8 @@ class CharacterBuilder:
 
   def __init__ (self, points):
   
-    self.misc = {"points": points,
+    self.misc = {"total_points": points,
+                 "spent_points": points,
                  "build":  BUILD_TABLE[0][utils.randBiDistrib(BUILD_TABLE[0], 2)],
                  "age": random.randint(18, 64),
                  "gender": random.choice(["Male", "Female"])}
@@ -39,8 +40,8 @@ class CharacterBuilder:
   
   def updatePoints(self, points):
 
-    if (self.misc["points"] - points) > -1:
-      self.misc["points"] -= points; return True
+    if (self.misc["spent_points"] - points) > -1:
+      self.misc["spent_points"] -= points; return True
 
   def setAppearance(self):
       
@@ -82,11 +83,36 @@ class CharacterBuilder:
     starting_wealth = STARTING_WEALTH[self.wealth["TL"]]
     wealth_details = utils.getColumnFromTable(WEALTH_TABLE, wealth_status)
 
-    self.wealth["starting_cash"] = starting_wealth * wealth_details[1]
+    self.wealth["starting_cash"] = "{:,}".format(int(starting_wealth * wealth_details[1]))
     self.wealth["status"] = wealth_status
     self.wealth["status_description"] = wealth_details[0]
     self.updatePoints(wealth_details[-1])
+
+  def tmpRandomStats(self):
+
+    skip = {"Per":"IQ", "HP":"ST", "Will":"IQ", "FP":"HT"}
+
+    for stat in self.basic_attributes:
+      if stat in skip.keys(): continue
+      mod_options = [i - 4 for i in xrange(9)] #generate list from -4 to 4
+      mod = mod_options[utils.randWeight(mod_options, 4)]
+      self.basic_attributes[stat] += mod
+      if stat in ["DX","IQ"]:
+        self.updatePoints(mod * 20)
+      elif stat in ["ST","HT"]:
+        self.updatePoints(mod * 10)
     
+    for other in skip:
+      mod_options = [i - 3 for i in xrange(7)] #generate list from -3 to 3
+      mod = mod_options[utils.randBiDistrib(mod_options, 5)]
+      self.basic_attributes[other] = self.basic_attributes[skip[other]] + mod
+      if other in ["Will","Per"]:
+        self.updatePoints(mod * 5)
+      elif other == "FP":      
+        self.updatePoints(mod * 3)
+      else:
+        self.updatePoints(mod * 2)
+
   def calculateMisc(self):
 
     ST = self.basic_attributes['ST']
@@ -98,16 +124,23 @@ class CharacterBuilder:
     self.secondary_attributes['swing'] = DAMAGE_TABLE[ST+1][1]
     self.secondary_attributes['basic_move'] = int(self.secondary_attributes['basic_speed'])
     self.secondary_attributes['basic_lift'] = (ST*ST)/5
-    self.secondary_attributes['none'] = 2((ST*ST)/5)
-    self.secondary_attributes['light'] = 4((ST*ST)/5)
-    self.secondary_attributes['medium'] = 6((ST*ST)/5)
-    self.secondary_attributes['heavy'] = 12((ST*ST)/5)
-    self.secondary_attributes['extra_heavy'] = 20((ST*ST)/5)
+    self.secondary_attributes['none'] = 2 * ((ST*ST)/5)
+    self.secondary_attributes['light'] = 4 * ((ST*ST)/5)
+    self.secondary_attributes['medium'] = 6 * ((ST*ST)/5)
+    self.secondary_attributes['heavy'] = 12 * ((ST*ST)/5)
+    self.secondary_attributes['extra_heavy'] = 20 * ((ST*ST)/5)
+
 
   def build(self):
 
     self.setAppearance()
     self.setWealth()
+    self.tmpRandomStats()
+    self.calculateMisc()
+
+    self.advantages["a_notice"] = "Feature coming soon!"
+    self.disadvantages["d_notice"] = "Feature coming soon!"
+    self.skills["s_notice"] = "Feature coming soon!"
 
 
 
