@@ -130,6 +130,27 @@ class CharacterBuilder:
     self.secondary_attributes['heavy'] = 12 * ((ST*ST)/5)
     self.secondary_attributes['extra_heavy'] = 20 * ((ST*ST)/5)
 
+  def chooseSkillCategories(self):
+    """Chooses between 1 and 3 skill categories.
+    
+       Returns:
+         skill_cats: a list of skill categories.
+    """
+
+    template = {1: "Focused",
+                2: "Specialized",
+                3: "Blended"}
+    skill_cats = []
+    for i in xrange(random.randint(1, 3)):
+      while True:
+        cat = random.choice(SKILL_CATEGORIES)
+        if cat not in skill_cats:
+          skill_cats.append(cat)
+          break
+    self.skills["focus"] = template[len(skill_cats)]
+    
+    return skill_cats
+
   def getPrimaryAttribute(self):
     """Gets current highest attribute.
 
@@ -146,45 +167,59 @@ class CharacterBuilder:
 
     return max_attr
 
-  def pickSkill(self):
+  def formattedSkills(self, skill_list):
+    """Formats a list of skills into html.
+    
+       Attributes:
+         skill_list: a list of skills.
+       Returns:
+         formatted_skills: a string of all skills as html
+    """
+    #TODO (Justin): Pretty up the html a bit to hide python syntax
+      #MAYBE: Somwewhere the skill levels need to be added; either here or elsewhere.
+    formatted_skills = "<br>".join(map(str, skill_list))
+    return formatted_skills
+
+  def pickSkills(self):
 
     skills = SKILLS
     p_attr = self.getPrimaryAttribute()
     possible_skills = []
     good_candidates = []
+    chosen = []
     for skill in SKILLS[1:]:
-      if self.misc["skill_category"] in skill[3]:
-        possible_skills.append(skill) # references category of skill
+      for cat in self.skills["skill_categories"]:
+        if cat in skill[-1]:
+          possible_skills.append(skill) # references category of skill
     for skill in possible_skills:
       if p_attr == skill[1]: # references attribute of skill
         possible_skills.append(skill)
 
-    if len(good_candidates) == 0:
-      chosen_skill = random.choice(possible_skills)
-    else:
-      chosen_skill = random.choice(good_candidates)
+    #tmp test
+    for i in xrange(random.randint(1,10)):
+      if len(good_candidates) == 0:
+        chosen.append(random.choice(possible_skills))
+      else:
+        chosen.append(random.choice(good_candidates))
     
-    return chosen_skill
+    formatted_skills = self.formattedSkills(chosen)
+    return formatted_skills
 
   def build(self):
+    """Assembles all attributes of the character.
+    """
 
     self.setAppearance()
     self.setWealth()
     #self.tmpRandomStats()
-
-    self.misc["skill_category"] = random.choice(SKILL_CATEGORIES)
-    self.pickSkill()
     
-    
+    self.skills["skill_categories"] = self.chooseSkillCategories()
+    self.skills["skills"] = self.pickSkills()
+    print self.skills["skills"]
 
-
-
-  
     self.calculateMisc()
-
     self.advantages["a_notice"] = "Feature coming soon!"
     self.disadvantages["d_notice"] = "Feature coming soon!"
-    self.skills["s_notice"] = "Feature coming soon!"
 
 
 
