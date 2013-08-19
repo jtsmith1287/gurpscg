@@ -29,7 +29,7 @@ class CharacterBuilder:
                              "Per": 10,
                              "FP": 10}
     self.secondary_attributes = {}
-    self.wealth = {"TL": 9}
+    self.wealth = {"TL": 8}
     self.appearance = {}
     self.encumbrance = {}
     self.skills = {}
@@ -78,40 +78,23 @@ class CharacterBuilder:
     self.updatePoints(appearance_choice[-1])
 
   def setWealth(self):
+    """Randomly selects starting wealth and status.
 
+       Returns:
+         wealth: a dictionary containing all wealth attributes for the character
+    """
+
+    wealth = {}
     wealth_status = WEALTH_TABLE[0][utils.randWeight(WEALTH_TABLE[0])]
     starting_wealth = STARTING_WEALTH[self.wealth["TL"]]
     wealth_details = utils.getColumnFromTable(WEALTH_TABLE, wealth_status)
 
-    self.wealth["starting_cash"] = "{:,}".format(int(starting_wealth * wealth_details[1]))
-    self.wealth["status"] = wealth_status
-    self.wealth["status_description"] = wealth_details[0]
+    wealth["starting_cash"] = "{:,}".format(int(starting_wealth * wealth_details[1]))
+    wealth["status"] = wealth_status
+    wealth["status_description"] = wealth_details[0]
     self.updatePoints(wealth_details[-1])
-
-  def tmpRandomStats(self):
-
-    skip = {"Per":"IQ", "HP":"ST", "Will":"IQ", "FP":"HT"}
-
-    for stat in self.basic_attributes:
-      if stat in skip.keys(): continue
-      mod_options = [i - 4 for i in xrange(9)] #generate list from -4 to 4
-      mod = mod_options[utils.randWeight(mod_options, 4)]
-      self.basic_attributes[stat] += mod
-      if stat in ["DX","IQ"]:
-        self.updatePoints(mod * 20)
-      elif stat in ["ST","HT"]:
-        self.updatePoints(mod * 10)
     
-    for other in skip:
-      mod_options = [i - 3 for i in xrange(7)] #generate list from -3 to 3
-      mod = mod_options[utils.randBiDistrib(mod_options, 5)]
-      self.basic_attributes[other] = self.basic_attributes[skip[other]] + mod
-      if other in ["Will","Per"]:
-        self.updatePoints(mod * 5)
-      elif other == "FP":      
-        self.updatePoints(mod * 3)
-      else:
-        self.updatePoints(mod * 2)
+    return wealth
 
   def calculateMisc(self):
 
@@ -137,6 +120,7 @@ class CharacterBuilder:
          skill_cats: a list of skill categories.
     """
 
+    # The key == how many skill categories the character will have.
     template = {1: "Focused",
                 2: "Specialized",
                 3: "Blended"}
@@ -181,27 +165,37 @@ class CharacterBuilder:
     return formatted_skills
 
   def pickSkills(self):
+    """
+    """
 
     skills = SKILLS
     p_attr = self.getPrimaryAttribute()
     possible_skills = []
     good_candidates = []
     chosen = []
+
     for skill in SKILLS[1:]:
+      # This loop is added because I realized we don't just have to have ONE category of skills
+      # The character can now have 1-3 categories (for now, if we like it). This essentially 
+      # checks every category attributed to the character and matches them with each skill
       for cat in self.skills["skill_categories"]:
-        if cat in skill[-1]:
-          possible_skills.append(skill) # references category of skill
+        if cat in skill[-1]: # [-1]: references category of the skill
+          possible_skills.append(skill)
+
     for skill in possible_skills:
-      if p_attr == skill[1]: # references attribute of skill
+      if p_attr == skill[1]: # [1]: references attribute of skill
         possible_skills.append(skill)
 
-    #tmp test
+    # I just did this to see what it would look like with a bunch of skills selected.
+    #####
+    if len(good_candidates) == 0:
+      skill_list = possible_skills
+    else:
+      skill_list = good_candidates
     for i in xrange(random.randint(1,10)):
-      if len(good_candidates) == 0:
-        chosen.append(random.choice(possible_skills))
-      else:
-        chosen.append(random.choice(good_candidates))
-    
+      chosen.append(random.choice(skill_list))
+    #####
+
     formatted_skills = self.formattedSkills(chosen)
     return formatted_skills
 
@@ -210,21 +204,40 @@ class CharacterBuilder:
     """
 
     self.setAppearance()
-    self.setWealth()
-    #self.tmpRandomStats()
-    
+    self.wealth.update(self.setWealth())    
     self.skills["skill_categories"] = self.chooseSkillCategories()
     self.skills["skills"] = self.pickSkills()
-    print self.skills["skills"]
-
     self.calculateMisc()
+
     self.advantages["a_notice"] = "Feature coming soon!"
     self.disadvantages["d_notice"] = "Feature coming soon!"
 
 
+"""
+  def tmpRandomStats(self):
+
+    skip = {"Per":"IQ", "HP":"ST", "Will":"IQ", "FP":"HT"}
+
+    for stat in self.basic_attributes:
+      if stat in skip.keys(): continue
+      mod_options = [i - 4 for i in xrange(9)] #generate list from -4 to 4
+      mod = mod_options[utils.randWeight(mod_options, 4)]
+      self.basic_attributes[stat] += mod
+      if stat in ["DX","IQ"]:
+        self.updatePoints(mod * 20)
+      elif stat in ["ST","HT"]:
+        self.updatePoints(mod * 10)
+    
+    for other in skip:
+      mod_options = [i - 3 for i in xrange(7)] #generate list from -3 to 3
+      mod = mod_options[utils.randBiDistrib(mod_options, 5)]
+      self.basic_attributes[other] = self.basic_attributes[skip[other]] + mod
+      if other in ["Will","Per"]:
+        self.updatePoints(mod * 5)
+      elif other == "FP":      
+        self.updatePoints(mod * 3)
+      else:
+        self.updatePoints(mod * 2)
+"""
 
 
-
-
-                          
-                                                            
