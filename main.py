@@ -37,15 +37,21 @@ application = webapp2.WSGIApplication(handlers, debug=True)
 
 
 if __name__ == "__main__":
-  c = mergeDicts(charbuilder.CharacterBuilder(100).__dict__)
+  character = charbuilder.CharacterBuilder(100)
+  c = mergeDicts(character.__dict__)
   
-  for k,v in c.iteritems():
-    print k, v
-  print
-  print "\nApp excecution successful."
-  print "You can now run Google App Engine Launcher."
-
-
+#=========================================================================================
+#   for k,v in character.skills.items():
+#     if k == "skills":
+#       for i in character.skills[k].split("<br>"):
+#         print i
+#       continue
+#     print k, v
+#   print
+#   print "\nApp excecution successful."
+#   print "You can now run Google App Engine Launcher."
+# 
+#=========================================================================================
 
 
 

@@ -142,10 +142,12 @@ class CharacterBuilder:
          max_attr: a string of random highest basic_attribute
     """
     
-    biggest = max(self.basic_attributes.values())
+    primary_stats = ["ST", "DX", "IQ", "HT"]
+    iter_list = (v for k,v in self.basic_attributes.items() if k in primary_stats)
+    biggest = max(iter_list)
     max_attrs = []
     for stat,value in self.basic_attributes.items():
-      if value >= biggest:
+      if value >= biggest and stat in primary_stats:
         max_attrs.append(stat)
     max_attr =  random.choice(max_attrs)
 
@@ -160,8 +162,19 @@ class CharacterBuilder:
          formatted_skills: a string of all skills as html
     """
     #TODO (Justin): Pretty up the html a bit to hide python syntax
-      #MAYBE: Somwewhere the skill levels need to be added; either here or elsewhere.
-    formatted_skills = "<br>".join(map(str, skill_list))
+    #MAYBE: Somwewhere the skill levels need to be added; either here or elsewhere.
+    
+    new_skill_list = []
+    for skill in skill_list:
+      formatted_skill = []
+      for item in skill:
+        formatted_skill.append("<td> %s </td>" %(item))
+      new_skill_list.append("<tr> %s </tr>" %("".join(formatted_skill)))
+
+    header = "<th>Name</th><th>Attribute</th><th>Difficulty</th>"\
+             "<th>TL</th><th>Page</th><th>Level</th>"
+    table_tag = "<table border=\"5\">%s%s</table>"
+    formatted_skills = table_tag %(header, "".join(new_skill_list))
     return formatted_skills
 
   def pickSkills(self):
@@ -179,21 +192,30 @@ class CharacterBuilder:
       # The character can now have 1-3 categories (for now, if we like it). This essentially 
       # checks every category attributed to the character and matches them with each skill
       for cat in self.skills["skill_categories"]:
-        if cat in skill[-1]: # [-1]: references category of the skill
+        if cat in skill[-1] and skill not in possible_skills: 
+          # [-1]: references category of the skill
           possible_skills.append(skill)
 
     for skill in possible_skills:
-      if p_attr == skill[1]: # [1]: references attribute of skill
-        possible_skills.append(skill)
+      if p_attr == skill[1] and skill not in good_candidates: 
+        # [1]: references attribute of skill
+        good_candidates.append(skill)
 
     # I just did this to see what it would look like with a bunch of skills selected.
     #####
-    if len(good_candidates) == 0:
-      skill_list = possible_skills
-    else:
-      skill_list = good_candidates
-    for i in xrange(random.randint(1,10)):
-      chosen.append(random.choice(skill_list))
+    for i in xrange(random.randint(3,11)):
+      if len(good_candidates) > 0:
+        skill_list = good_candidates
+      elif len(possible_skills) > 0:
+        skill_list = possible_skills
+      else:
+        skill_list = SKILLS[1:]
+      while True:
+        skill = random.choice(skill_list)
+        if skill not in chosen:
+          chosen.append(skill)
+          skill_list.remove(skill)
+          break
     #####
 
     formatted_skills = self.formattedSkills(chosen)

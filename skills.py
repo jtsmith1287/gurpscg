@@ -97,7 +97,7 @@ SKILLS = [
           ["Gambling", "IQ", "A", 0, "197", [O]],
           ["Gesture", "IQ", "E", 0, "198", [O]],
           ["Heraldry", "IQ", "A", 0, "199", [O]],
-          ["Intimidation", "Will", "A", 0, "202", [O,A,c]],
+          ["Intimidation", "Will", "A", 0, "202", [O,A,C]],
           ["Leadership", "IQ", "A", 0, "204", [O]],
           ["Merchant", "IQ", "A", 0, "209", [O]],
           ["Panhandling", "IQ", "E", 0, "212", [O]],
