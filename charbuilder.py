@@ -80,8 +80,8 @@ class CharacterBuilder:
   def setWealth(self):
     """Randomly selects starting wealth and status.
 
-       Returns:
-         wealth: a dictionary containing all wealth attributes for the character
+    Returns:
+      wealth: a dictionary containing all wealth attributes for the character
     """
 
     wealth = {}
@@ -116,8 +116,8 @@ class CharacterBuilder:
   def chooseSkillCategories(self):
     """Chooses between 1 and 3 skill categories.
     
-       Returns:
-         skill_cats: a list of skill categories.
+    Returns:
+      skill_cats: a list of skill categories.
     """
 
     # The key == how many skill categories the character will have.
@@ -138,8 +138,8 @@ class CharacterBuilder:
   def getPrimaryAttribute(self):
     """Gets current highest attribute.
 
-       Returns:
-         max_attr: a string of random highest basic_attribute
+    Returns:
+      max_attr: a string of random highest basic_attribute
     """
     
     primary_stats = ["ST", "DX", "IQ", "HT"]
@@ -156,10 +156,10 @@ class CharacterBuilder:
   def formattedSkills(self, skill_list):
     """Formats a list of skills into html.
     
-       Attributes:
-         skill_list: a list of skills.
-       Returns:
-         formatted_skills: a string of all skills as html
+    Args:
+      skill_list: a list of skills.
+    Returns:
+      formatted_skills: a string of all skills as html
     """
     #TODO (Justin): Pretty up the html a bit to hide python syntax
     #MAYBE: Somwewhere the skill levels need to be added; either here or elsewhere.
@@ -177,15 +177,16 @@ class CharacterBuilder:
     formatted_skills = table_tag %(header, "".join(new_skill_list))
     return formatted_skills
 
-  def pickSkills(self):
-    """
-    """
+  def populateSkillLists(self):
+    """Creates two lists of skills for choosing the character's skills.
 
+    Returns:
+      skill_lists: a tuple of good candidates and other possible skills
+    """
     skills = SKILLS
     p_attr = self.getPrimaryAttribute()
     possible_skills = []
     good_candidates = []
-    chosen = []
 
     for skill in SKILLS[1:]:
       # This loop is added because I realized we don't just have to have ONE category of skills
@@ -200,66 +201,57 @@ class CharacterBuilder:
       if p_attr == skill[1] and skill not in good_candidates: 
         # [1]: references attribute of skill
         good_candidates.append(skill)
+    skill_lists = (good_candidates, possible_skills) 
 
-    # I just did this to see what it would look like with a bunch of skills selected.
-    #####
-    for i in xrange(random.randint(3,11)):
-      if len(good_candidates) > 0:
+    return skill_lists
+
+  def pickSkill(self, skill_lists):
+    """Picks a skill at random from skill_lists.
+    
+    Args:
+      skill_lists: a tuple of good candidates and other possisble skills
+
+    Returns:
+      skill: a list that is the chosen skill
+    """
+    skill = []
+    good_candidates = skill_lists[0]
+    all_the_other_skills = skill_lists[1]
+    chance = random.randint(1, 10)
+    while not skill:
+      if good_candidates and chance > 2:
         skill_list = good_candidates
-      elif len(possible_skills) > 0:
-        skill_list = possible_skills
+      elif all_the_other_skills and chance == 1:
+        skill_list = all_the_other_skills
       else:
         skill_list = SKILLS[1:]
-      while True:
-        skill = random.choice(skill_list)
-        if skill not in chosen:
-          chosen.append(skill)
-          skill_list.remove(skill)
-          break
-    #####
+      skill_choice = random.choice(skill_list)
+      if skill_choice in self.skills["skills"]:
+        skill_list.remove(skill_choice)
+      else:
+        skill = skill_choice
 
-    formatted_skills = self.formattedSkills(chosen)
-    return formatted_skills
+    return skill
 
   def build(self):
     """Assembles all attributes of the character.
     """
-
+    skill_lists = self.populateSkillLists()
+    character_skills = []
     self.setAppearance()
     self.wealth.update(self.setWealth())    
     self.skills["skill_categories"] = self.chooseSkillCategories()
-    self.skills["skills"] = self.pickSkills()
+    for i in xrange(10):
+      character_skills.append(self.pickSkill(skill_lists))
+    self.skills["skills"] = self.formattedSkills(character_skills)
+
+
     self.calculateMisc()
 
     self.advantages["a_notice"] = "Feature coming soon!"
     self.disadvantages["d_notice"] = "Feature coming soon!"
 
 
-"""
-  def tmpRandomStats(self):
 
-    skip = {"Per":"IQ", "HP":"ST", "Will":"IQ", "FP":"HT"}
-
-    for stat in self.basic_attributes:
-      if stat in skip.keys(): continue
-      mod_options = [i - 4 for i in xrange(9)] #generate list from -4 to 4
-      mod = mod_options[utils.randWeight(mod_options, 4)]
-      self.basic_attributes[stat] += mod
-      if stat in ["DX","IQ"]:
-        self.updatePoints(mod * 20)
-      elif stat in ["ST","HT"]:
-        self.updatePoints(mod * 10)
-    
-    for other in skip:
-      mod_options = [i - 3 for i in xrange(7)] #generate list from -3 to 3
-      mod = mod_options[utils.randBiDistrib(mod_options, 5)]
-      self.basic_attributes[other] = self.basic_attributes[skip[other]] + mod
-      if other in ["Will","Per"]:
-        self.updatePoints(mod * 5)
-      elif other == "FP":      
-        self.updatePoints(mod * 3)
-      else:
-        self.updatePoints(mod * 2)
-"""
 
 
