@@ -10,6 +10,12 @@ class Utilities:
   def getColumnFromTable (self, table, header):
 
     return [i[table[0].index(header)] for i in table[1:]]
+  
+  def getRowFromTable(self, table, row_name):
+    
+    for row in table:
+      if row[0] == row_name:
+        return row
 
   def randWeight(self, array, dice=3):
     """Returns a random index simulating a dice roll."""

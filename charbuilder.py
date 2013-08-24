@@ -214,6 +214,24 @@ class CharacterBuilder:
 
     return good_candidates
 
+  def setSkillLevel(self, skill):
+    """Randomly sets the level of the skill.
+
+    Args:
+      skill: a list that is the skill to be leveled.
+    Returns:
+      skill: the skill with it's skill level appended.
+    """
+    skill_difficulty = skill[2]
+    point_table = getColumnFromTable(SKILL_COST_TABLE, "PS")
+    points_to_spend = randBiDistrib(point_table, 0)
+    table_index = SKILL_COST_TABLE.index(skill_difficulty)
+    skill_levels = getRowFromTable(SKILL_COST_TABLE, points_to_spend)
+    skill_level = skill_levels[table_index]
+    skill[-1] = self.basic_attributes[skill[1]] + skill_level
+
+    return skill
+
   def pickSkill(self, probable_skills):
     """Picks a skill at random from skill_lists.
     
@@ -242,6 +260,7 @@ class CharacterBuilder:
     if not self.skills["skills"]:
       attr = skill[1]
       self.basic_attributes[attr] += 2
+    skill = self.setSkillLevel(skill)
 
     return skill
 
@@ -253,7 +272,9 @@ class CharacterBuilder:
     self.skills["skill_categories"] = self.chooseSkillCategories()
     skill_list = self.getPossibleSkills()
     for i in xrange(10):
-      self.skills["skills"].append(self.pickSkill(skill_list))
+      raw_skill = self.pickSkill(skill_list)
+      skill = self.setSkillLevel(raw_skill)
+      self.skills["skills"].append(skill)
     self.skills["skills"] = self.formattedSkills(self.skills["skills"])
     self.calculateMisc()
 
