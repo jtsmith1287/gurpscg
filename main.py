@@ -28,7 +28,7 @@ class MainPage(webapp2.RequestHandler):
       new_character = charbuilder.CharacterBuilder(100)
       self.response.write(HTML["main_page"] % (mergeDicts(new_character.__dict__)))
     except Exception:
-      logging.error(traceback.format_exc())
+      self.response.write(traceback.format_exc())
   
 
 handlers = [('/', MainPage)]

@@ -32,7 +32,7 @@ class CharacterBuilder:
     self.wealth = {"TL": 8}
     self.appearance = {}
     self.encumbrance = {}
-    self.skills = {}
+    self.skills = {"skills": []}
     self.advantages = {}
     self.disadvantages = {"disadvantage_limit": random.randint(0, points/2)}
 
@@ -177,18 +177,16 @@ class CharacterBuilder:
     formatted_skills = table_tag %(header, "".join(new_skill_list))
     return formatted_skills
 
-  def populateSkillLists(self):
-    """Creates two lists of skills for choosing the character's skills.
+  def getPossibleSkills(self):
+    """Creates a list of likely skills for choosing the character's skills.
 
     Returns:
-      skill_lists: a tuple of good candidates and other possible skills
+      skill_lists: a list of probable skills
     """
     skills = SKILLS
-    p_attr = self.getPrimaryAttribute()
     possible_skills = []
-    good_candidates = []
 
-    for skill in SKILLS[1:]:
+    for skill in skills[1:]:
       # This loop is added because I realized we don't just have to have ONE category of skills
       # The character can now have 1-3 categories (for now, if we like it). This essentially 
       # checks every category attributed to the character and matches them with each skill
@@ -197,32 +195,42 @@ class CharacterBuilder:
           # [-1]: references category of the skill
           possible_skills.append(skill)
 
+    return possible_skills
+
+  def getGoodCandidateSkills(self, possible_skills):
+    """Generates a list of skills based on a given attribute.
+
+    Args:
+      possible_skills: list of the skills that match the characters categories.
+    Returns:
+      good_candidates: list of skills that match the primary attribute.
+    """
+    good_candidates = []
+    p_attr = self.getPrimaryAttribute()
     for skill in possible_skills:
-      if p_attr == skill[1] and skill not in good_candidates: 
+      if p_attr in skill[1] and skill not in good_candidates: 
         # [1]: references attribute of skill
-        good_candidates.append(skill)
-    skill_lists = (good_candidates, possible_skills) 
+        good_candidates.append(skill) 
 
-    return skill_lists
+    return good_candidates
 
-  def pickSkill(self, skill_lists):
+  def pickSkill(self, probable_skills):
     """Picks a skill at random from skill_lists.
     
     Args:
-      skill_lists: a tuple of good candidates and other possisble skills
+      probable_skills: a list of good candidates and other possisble skills
 
     Returns:
       skill: a list that is the chosen skill
     """
     skill = []
-    good_candidates = skill_lists[0]
-    all_the_other_skills = skill_lists[1]
+    good_candidates = self.getGoodCandidateSkills(probable_skills)
     chance = random.randint(1, 10)
     while not skill:
       if good_candidates and chance > 2:
         skill_list = good_candidates
-      elif all_the_other_skills and chance == 1:
-        skill_list = all_the_other_skills
+      elif probable_skills and chance == 1:
+        skill_list = probable_skills
       else:
         skill_list = SKILLS[1:]
       skill_choice = random.choice(skill_list)
@@ -230,22 +238,23 @@ class CharacterBuilder:
         skill_list.remove(skill_choice)
       else:
         skill = skill_choice
+    # If this is the first skill then we want to increase the primary attr
+    if not self.skills["skills"]:
+      attr = skill[1]
+      self.basic_attributes[attr] += 2
 
     return skill
 
   def build(self):
     """Assembles all attributes of the character.
     """
-    skill_lists = self.populateSkillLists()
-    character_skills = []
     self.setAppearance()
     self.wealth.update(self.setWealth())    
     self.skills["skill_categories"] = self.chooseSkillCategories()
+    skill_list = self.getPossibleSkills()
     for i in xrange(10):
-      character_skills.append(self.pickSkill(skill_lists))
-    self.skills["skills"] = self.formattedSkills(character_skills)
-
-
+      self.skills["skills"].append(self.pickSkill(skill_list))
+    self.skills["skills"] = self.formattedSkills(self.skills["skills"])
     self.calculateMisc()
 
     self.advantages["a_notice"] = "Feature coming soon!"
