@@ -1,7 +1,6 @@
 import webapp2
 import charbuilder
 import traceback
-import logging
 
 
 def getText(_file):

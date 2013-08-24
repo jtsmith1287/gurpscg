@@ -172,7 +172,7 @@ class CharacterBuilder:
       new_skill_list.append("<tr> %s </tr>" %("".join(formatted_skill)))
 
     header = "<th>Name</th><th>Attribute</th><th>Difficulty</th>"\
-             "<th>TL</th><th>Page</th><th>Level</th>"
+             "<th>TL</th><th>Page</th><th>R.Level</th><th>Level</th>"
     table_tag = "<table border=\"5\">%s%s</table>"
     formatted_skills = table_tag %(header, "".join(new_skill_list))
     return formatted_skills
@@ -183,13 +183,12 @@ class CharacterBuilder:
     Returns:
       skill_lists: a list of probable skills
     """
-    skills = SKILLS
     possible_skills = []
 
-    for skill in skills[1:]:
-      print skill "<br>"
+    for skill in SKILLS[1:]:
       for cat in self.skills["skill_categories"]:
-        if cat in skill[-1] and skill not in possible_skills: 
+        if cat == skill[-1] and skill not in possible_skills:
+          
           # [-1]: references category of the skill
           possible_skills.append(skill)
 
@@ -222,11 +221,12 @@ class CharacterBuilder:
     """
     skill_difficulty = skill[2]
     point_table = utils.getColumnFromTable(SKILL_COST_TABLE, "PS")
-    points_to_spend = point_table[utils.randBiDistrib(point_table, 0) + 1]
+    points_to_spend = point_table[utils.randBiDistrib(point_table, 2) + 1]
     table_index = SKILL_COST_TABLE[0].index(skill_difficulty)
     skill_levels = utils.getRowFromTable(SKILL_COST_TABLE, points_to_spend)
     skill_level = skill_levels[table_index]
-    skill[-1] = self.basic_attributes[skill[1]] + skill_level
+    skill[-1] = skill_level
+    skill.extend([self.basic_attributes[skill[1]] + skill_level]) # places the relative level in front of the level
 
     return skill
 
@@ -235,7 +235,6 @@ class CharacterBuilder:
     
     Args:
       probable_skills: a list of good candidates and other possisble skills
-
     Returns:
       skill: a list that is the chosen skill
     """
@@ -258,7 +257,6 @@ class CharacterBuilder:
     if not self.skills["skills"]:
       attr = skill[1]
       self.basic_attributes[attr] += 2
-    skill = self.setSkillLevel(skill)
 
     return skill
 
