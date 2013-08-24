@@ -187,9 +187,7 @@ class CharacterBuilder:
     possible_skills = []
 
     for skill in skills[1:]:
-      # This loop is added because I realized we don't just have to have ONE category of skills
-      # The character can now have 1-3 categories (for now, if we like it). This essentially 
-      # checks every category attributed to the character and matches them with each skill
+      print skill "<br>"
       for cat in self.skills["skill_categories"]:
         if cat in skill[-1] and skill not in possible_skills: 
           # [-1]: references category of the skill
@@ -223,10 +221,10 @@ class CharacterBuilder:
       skill: the skill with it's skill level appended.
     """
     skill_difficulty = skill[2]
-    point_table = getColumnFromTable(SKILL_COST_TABLE, "PS")
-    points_to_spend = randBiDistrib(point_table, 0)
-    table_index = SKILL_COST_TABLE.index(skill_difficulty)
-    skill_levels = getRowFromTable(SKILL_COST_TABLE, points_to_spend)
+    point_table = utils.getColumnFromTable(SKILL_COST_TABLE, "PS")
+    points_to_spend = point_table[utils.randBiDistrib(point_table, 0) + 1]
+    table_index = SKILL_COST_TABLE[0].index(skill_difficulty)
+    skill_levels = utils.getRowFromTable(SKILL_COST_TABLE, points_to_spend)
     skill_level = skill_levels[table_index]
     skill[-1] = self.basic_attributes[skill[1]] + skill_level
 

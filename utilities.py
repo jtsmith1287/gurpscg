@@ -13,7 +13,7 @@ class Utilities:
   
   def getRowFromTable(self, table, row_name):
     
-    for row in table:
+    for row in table[1:]:
       if row[0] == row_name:
         return row
 
