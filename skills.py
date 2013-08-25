@@ -11,8 +11,7 @@ O = "occult"
 S = "social"
 G = "magic"
 
-SKILLS = [
-          ["Name", "Attribute", "Difficulty", "TL", "Page", "Category"],
+SKILLS = (["Name", "Attribute", "Difficulty", "TL", "Page", "Category"],
           ["Axe/Mace", "DX", "A",  1, "208", [A]],
           ["Garrote", "DX", "E",  3, "208", [C]],
           ["Carpentry", "IQ", "E",  0, "208", [D]],
@@ -108,7 +107,7 @@ SKILLS = [
           ["Sex Appeal", "HT", "A", 0, "219", [O]],
           ["Streetwise", "IQ", "A", 0, "223", [O]],
           ["Teaching", "IQ", "A", 0, "224", [O]],
-          ]
+          )
 
 
 SKILL_CATEGORIES = [A,B,C,D,M,T,S,O,G]

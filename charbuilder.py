@@ -20,14 +20,8 @@ class CharacterBuilder:
                  "build":  BUILD_TABLE[0][utils.randBiDistrib(BUILD_TABLE[0], 2)],
                  "age": random.randint(18, 64),
                  "gender": random.choice(["Male", "Female"])}
-    self.basic_attributes = {"ST": 10,
-                             "DX": 10,
-                             "IQ": 10,
-                             "HT": 10,
-                             "HP": 10,
-                             "Will": 10,
-                             "Per": 10,
-                             "FP": 10}
+    self.basic_attributes = {"ST": 10, "DX": 10,   "IQ": 10,  "HT": 10,
+                             "HP": 10, "Will": 10, "Per": 10, "FP": 10}
     self.secondary_attributes = {}
     self.wealth = {"TL": 8}
     self.appearance = {}
@@ -177,7 +171,7 @@ class CharacterBuilder:
     formatted_skills = table_tag %(header, "".join(new_skill_list))
     return formatted_skills
 
-  def getPossibleSkills(self):
+  def getPossibleSkills(self, skills):
     """Creates a list of likely skills for choosing the character's skills.
 
     Returns:
@@ -185,7 +179,7 @@ class CharacterBuilder:
     """
     possible_skills = []
 
-    for skill in SKILLS[1:]:
+    for skill in skills[1:]:
       for cat in self.skills["skill_categories"]:
         if cat == skill[-1] and skill not in possible_skills:
           
@@ -219,18 +213,32 @@ class CharacterBuilder:
     Returns:
       skill: the skill with it's skill level appended.
     """
+    i = SKILLS.index(skill)
+    print SKILLS[i]
     skill_difficulty = skill[2]
+    # We get the list of possible point costs
     point_table = utils.getColumnFromTable(SKILL_COST_TABLE, "PS")
+    # Then we'll get a weighted random point cost from that list
     points_to_spend = point_table[utils.randBiDistrib(point_table, 2) + 1]
+    # We'll need the column for where we're going to get the relative skill level
+    # based on the already chosen point cost
     table_index = SKILL_COST_TABLE[0].index(skill_difficulty)
+    # This is where we get the row for all possible difficulties associoated with
+    # that point cost
     skill_levels = utils.getRowFromTable(SKILL_COST_TABLE, points_to_spend)
+    # And now we actually get our skill level and we'll replace the skill
+    # categories with the relative level, and then extend the skill to show the
+    # actual level (which is the base attribute + the relative level
     skill_level = skill_levels[table_index]
     skill[-1] = skill_level
-    skill.extend([self.basic_attributes[skill[1]] + skill_level]) # places the relative level in front of the level
+    skill.extend([self.basic_attributes[skill[1]] + skill_level])
+    
+    print skill, "<br>", SKILLS[i]
+    print "<br>"
 
     return skill
 
-  def pickSkill(self, probable_skills):
+  def pickSkill(self, probable_skills, all_skills):
     """Picks a skill at random from skill_lists.
     
     Args:
@@ -247,7 +255,7 @@ class CharacterBuilder:
       elif probable_skills and chance == 1:
         skill_list = probable_skills
       else:
-        skill_list = SKILLS[1:]
+        skill_list = list(all_skills)[1:]
       skill_choice = random.choice(skill_list)
       if skill_choice in self.skills["skills"]:
         skill_list.remove(skill_choice)
@@ -263,12 +271,13 @@ class CharacterBuilder:
   def build(self):
     """Assembles all attributes of the character.
     """
+    all_skills = SKILLS
     self.setAppearance()
     self.wealth.update(self.setWealth())    
     self.skills["skill_categories"] = self.chooseSkillCategories()
-    skill_list = self.getPossibleSkills()
+    skill_list = self.getPossibleSkills(all_skills)
     for i in xrange(10):
-      raw_skill = self.pickSkill(skill_list)
+      raw_skill = self.pickSkill(skill_list, all_skills)
       skill = self.setSkillLevel(raw_skill)
       self.skills["skills"].append(skill)
     self.skills["skills"] = self.formattedSkills(self.skills["skills"])
