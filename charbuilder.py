@@ -280,7 +280,7 @@ class CharacterBuilder:
   def updateAttrPoints(self, stat, mod):
     """
     """
-    print "High Attribute = %s<br>" %(stat)
+    print stat
     if stat in ["DX", "IQ"]:
       cost = mod * 20
     elif stat in ["ST", "HT"]:
@@ -303,16 +303,17 @@ class CharacterBuilder:
         attrs[skill[1]] += 1
       except KeyError:
         attrs[skill[1]] = 1
-    print attrs
-    print max(attrs.iteritems(), key=operator.itemgetter(1))
+    high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
     chance = random.random()
     if chance < 0.81:
       self.updateAttrPoints(high_attr, 1)
       self.basic_attributes[high_attr] += 1
     else:
-      high_attr = ["ST", "HT", "IQ", "DX"].remove(high_attr)
-      self.updateAttrPoints(high_attr, 1)
-      self.basic_attributes[high_attr] += 1
+      attr_choices = ["ST", "HT", "IQ", "DX"]
+      attr_choices.remove(high_attr)
+      highestestest_attr = random.choice(attr_choices)
+      self.updateAttrPoints(highestestest_attr, 1)
+      self.basic_attributes[highestestest_attr] += 1
 
   def build(self):
     """Assembles all attributes of the character.
@@ -325,13 +326,14 @@ class CharacterBuilder:
 
     num_advantages = 0
     num_attrs = 0
-    self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
     for i in xrange(15):
       choice = random.randint(1, 3)
       if choice == 1:
         self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
       if choice == 2:
         #increase a stat
+        if not self.skills["skills"]:
+          continue
         self.increaseAttribute()
       if choice == 3:
         #add an advantage

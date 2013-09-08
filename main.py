@@ -32,6 +32,8 @@ class MainPage(webapp2.RequestHandler):
 handlers = [('/', MainPage)]
 application = webapp2.WSGIApplication(handlers, debug=True)
 
+if __name__ == "__main__":
+  charbuilder.CharacterBuilder(100)
   
 
 
