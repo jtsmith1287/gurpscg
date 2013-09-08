@@ -6,8 +6,10 @@ Created on Jul 31, 2013
 
 from tables import *
 from skills import *
+import operator
 import random
 from utilities import utils
+
 
 
 class CharacterBuilder:
@@ -32,8 +34,10 @@ class CharacterBuilder:
 
     self.build()
   
-  def updatePoints(self, points):
+  def updatePoints(self, points, stat=None):
 
+    if stat:
+      print "%s change by %s<br>" %(stat, points)
     if (self.misc["spent_points"] - points) > -1:
       self.misc["spent_points"] -= points; return True
 
@@ -264,17 +268,51 @@ class CharacterBuilder:
     # If this is the first skill then we want to increase the primary attr
     if not self.skills["skills"]:
       attr = skill[1]
+      p_attrs =  ["ST", "DX", "IQ"]
+      if attr not in p_attrs:
+        attr = random.choice(p_attrs)
       self.basic_attributes[attr] += 2
     # Set the level of a copy of the skill and return the copy
     skill = self.setSkillLevel(skill[:])
 
     return skill
-    
+
+  def updateAttrPoints(self, stat, mod):
+    """
+    """
+    print "High Attribute = %s<br>" %(stat)
+    if stat in ["DX", "IQ"]:
+      cost = mod * 20
+    elif stat in ["ST", "HT"]:
+      cost = mod * 10
+    elif stat in ["Will", "Per"]:
+      cost = mod * 5
+    elif stat == "FP":      
+      cost = mod * 3
+    elif stat == "HP":
+      cost = mod * 2
+
+    self.updatePoints(cost, stat)
+
   def increaseAttribute(self):
     """
     """
-    pass
-
+    attrs = {}
+    for skill in self.skills["skills"]:
+      try:
+        attrs[skill[1]] += 1
+      except KeyError:
+        attrs[skill[1]] = 1
+    print attrs
+    print max(attrs.iteritems(), key=operator.itemgetter(1))
+    chance = random.random()
+    if chance < 0.81:
+      self.updateAttrPoints(high_attr, 1)
+      self.basic_attributes[high_attr] += 1
+    else:
+      high_attr = ["ST", "HT", "IQ", "DX"].remove(high_attr)
+      self.updateAttrPoints(high_attr, 1)
+      self.basic_attributes[high_attr] += 1
 
   def build(self):
     """Assembles all attributes of the character.
@@ -287,15 +325,17 @@ class CharacterBuilder:
 
     num_advantages = 0
     num_attrs = 0
-    choice = random.randint(1, 3)
-    if choice == 1:
-      self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
-    if choice == 2:
-      #increase a stat
-      self.increaseAttribute()
-    if choice == 3:
-      #add an advantage
-      num_advantages += 1
+    self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
+    for i in xrange(15):
+      choice = random.randint(1, 3)
+      if choice == 1:
+        self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
+      if choice == 2:
+        #increase a stat
+        self.increaseAttribute()
+      if choice == 3:
+        #add an advantage
+        num_advantages += 1
 
     
     #if spent_points > point total: pickDisadvantage(point_limit)
