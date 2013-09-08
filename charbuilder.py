@@ -287,9 +287,9 @@ class CharacterBuilder:
 
     num_advantages = 0
     num_attrs = 0
-    choice = random.randint(1, 3):
+    choice = random.randint(1, 3)
     if choice == 1:
-      self.skills["skills"].append(self.pickSkill(all_skills))
+      self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
     if choice == 2:
       #increase a stat
       self.increaseAttribute()
