@@ -226,7 +226,8 @@ class CharacterBuilder:
     skill_levels = utils.getRowFromTable(SKILL_COST_TABLE, points_to_spend)
     skill_level = skill_levels[table_index]
     skill[-1] = skill_level
-    skill.extend([self.basic_attributes[skill[1]] + skill_level]) # places the relative level in front of the level
+    # Places the relative level in front of the level
+    skill.extend([self.basic_attributes[skill[1]] + skill_level])
 
     return skill
 
