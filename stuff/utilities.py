@@ -25,6 +25,6 @@ class Utilities:
   def randBiDistrib(self, array, median):
     """Returns a random index using binomial distribution."""
     l = len(array)
-    return sum([1 if random.random() < (float(median)/l) else 0 for i in xrange(l)])-1
+    return sum([1 if random.random() < (float(median)/l) else 0 for i in xrange(l-1)])
 
 utils = Utilities()

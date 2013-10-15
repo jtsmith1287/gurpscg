@@ -4,42 +4,56 @@ Created on Jul 31, 2013
 @author: Justin & Theophilus
 '''
 
-from tables import *
-from skills import *
+
 import operator
 import random
-from utilities import utils
+
+from stuff.utilities import utils
+from stuff.tables import *
+from stuff.headers import *
+from traits.advantages import *
+#from traits.disadvantages import *
+from traits.skills import *
 
 
 
 class CharacterBuilder:
   """Forms everything about the character."""
 
-  def __init__ (self, points):
+  def __init__ (self, form_data):
   
-    self.misc = {"total_points": points,
-                 "spent_points": points,
+    self.misc = {"total_points": form_data["points"],
+                 "spent_points": form_data["points"],
                  "build":  BUILD_TABLE[0][utils.randBiDistrib(BUILD_TABLE[0], 2)],
                  "age": random.randint(18, 64),
-                 "gender": random.choice(["Male", "Female"])}
+                 "gender": random.choice(["Male", "Female"]),
+                 "TL": form_data["tl"]}
     self.basic_attributes = {"ST": 10, "DX": 10,   "IQ": 10,  "HT": 10,
                              "HP": 10, "Will": 10, "Per": 10, "FP": 10}
     self.secondary_attributes = {}
-    self.wealth = {"TL": 8}
+    self.wealth = {}
     self.appearance = {}
     self.encumbrance = {}
-    self.skills = {"skills": []}
-    self.advantages = {}
-    self.disadvantages = {"disadvantage_limit": random.randint(0, points/2)}
+    self.skills = {"skills": [], 
+                   "skill_limit": self.misc["total_points"] * 0.24}
+    self.advantages = {"advantages": [],
+                       "adv_types": form_data["adv_types"]}
+    self.disadvantages = {"disadvantage_limit": random.randint(0, int(form_data["points"] * 0.5))}
+    self.logs = {"print":[]}
 
     self.build()
-  
+
+  def Print(self, *args):
+
+    try:
+      msg = "".join(args)
+    except TypeError:
+      msg = args
+    self.logs["print"].extend(["%s<br>" %(str(msg))])
+
   def updatePoints(self, points, stat=None):
 
-    if stat:
-      print "%s change by %s<br>" %(stat, points)
-    if (self.misc["spent_points"] - points) > -1:
-      self.misc["spent_points"] -= points; return True
+    self.misc["spent_points"] -= points; return True
 
   def setAppearance(self):
       
@@ -84,7 +98,7 @@ class CharacterBuilder:
 
     wealth = {}
     wealth_status = WEALTH_TABLE[0][utils.randWeight(WEALTH_TABLE[0])]
-    starting_wealth = STARTING_WEALTH[self.wealth["TL"]]
+    starting_wealth = STARTING_WEALTH[self.misc["TL"]]
     wealth_details = utils.getColumnFromTable(WEALTH_TABLE, wealth_status)
 
     wealth["starting_cash"] = "{:,}".format(int(starting_wealth * wealth_details[1]))
@@ -151,30 +165,24 @@ class CharacterBuilder:
 
     return max_attr
 
-  def formattedSkills(self, skill_list):
-    """Formats a list of skills into html.
+  def formattedSkills(self, item_list, header=None):
+    """Formats a list of items into html.
     
     Args:
-      skill_list: a list of skills.
+      item_list: a list of items.
     Returns:
-      formatted_skills: a string of all skills as html
+      formatted_skills: a string of all items as html
     """
-    #TODO (Justin): Pretty up the html a bit to hide python syntax
-    #MAYBE: Somwewhere the skill levels need to be added; either here or elsewhere.
-    
-    new_skill_list = []
-    for skill in skill_list:
-      formatted_skill = []
-      for item in skill:
-        formatted_skill.append("<td> %s </td>" %(item))
-      new_skill_list.append("<tr> %s </tr>" %("".join(formatted_skill)))
+    new_item_list = []
+    for item in item_list:
+      formatted_item = []
+      for item in item:
+        formatted_item.append("<td> %s </td>" %(item))
+      new_item_list.append("<tr> %s </tr>" %("".join(formatted_item)))
 
-    header = "<th>Name</th><th>Attribute</th><th>Difficulty</th>"\
-             "<th>TL</th><th>Page</th><th>R.Level</th><th>Level</th>"\
-             "<th>Points</th>"
     table_tag = "<table border=\"5\">%s%s</table>"
-    formatted_skills = table_tag %(header, "".join(new_skill_list))
-    return formatted_skills
+    formatted_items = table_tag %(header, "".join(sorted(new_item_list)))
+    return formatted_items
 
   def getPossibleSkills(self, skills):
     """Creates a list of likely skills for choosing the character's skills.
@@ -185,11 +193,11 @@ class CharacterBuilder:
     possible_skills = []
 
     for skill in skills[1:]:
-      for cat in self.skills["skill_categories"]:
-        if cat == skill[-1] and skill not in possible_skills:
-          
-          # [-1]: references category of the skill
-          possible_skills.append(skill)
+      if self.misc["TL"] >= skill[3]:
+        for cat in self.skills["skill_categories"]:
+          if cat in skill[-1] and skill not in possible_skills:
+            # [-1]: references category of the skill
+            possible_skills.append(skill)
 
     return possible_skills
 
@@ -206,7 +214,7 @@ class CharacterBuilder:
     for skill in possible_skills:
       if p_attr in skill[1] and skill not in good_candidates: 
         # [1]: references attribute of skill
-        good_candidates.append(skill) 
+        good_candidates.append(skill)
 
     return good_candidates
 
@@ -218,25 +226,23 @@ class CharacterBuilder:
     Returns:
       skill: the skill with it's skill level appended.
     """
-    i = SKILLS.index(skill)
     skill_difficulty = skill[2]
     # We get the list of possible point costs
     point_table = utils.getColumnFromTable(SKILL_COST_TABLE, "PS")
     # Then we'll get a weighted random point cost from that list
-    points_to_spend = point_table[utils.randBiDistrib(point_table, 2)]
+    points_to_spend = point_table[utils.randBiDistrib(point_table, 1)]
     # We'll need the column for where we're going to get the relative skill level
     # based on the already chosen point cost
     table_index = SKILL_COST_TABLE[0].index(skill_difficulty)
-    # This is where we get the row for all possible difficulties associoated with
+    # This is where we get the row for all possible difficulties associated with
     # that point cost
     skill_levels = utils.getRowFromTable(SKILL_COST_TABLE, points_to_spend)
     # And now we actually get our skill level and we'll replace the skill
     # categories with the relative level, and then extend the skill to show the
     # actual level (which is the base attribute + the relative level
-    skill_level = skill_levels[table_index]
-    skill[-1] = skill_level
-    skill.extend([self.basic_attributes[skill[1]] + skill_level,
-                  points_to_spend])
+    relative_level = skill_levels[table_index]
+    skill[-1] = relative_level
+    skill.append(points_to_spend)
     self.updatePoints(points_to_spend)
 
 
@@ -246,7 +252,7 @@ class CharacterBuilder:
     """Picks a skill at random from skill_lists.
     
     Args:
-      probable_skills: a list of good candidates and other possisble skills
+      probable_skills: a list of good candidates and other possible skills
     Returns:
       skill: a list that is the chosen skill
     """
@@ -260,8 +266,9 @@ class CharacterBuilder:
         skill_list = probable_skills
       else:
         skill_list = list(all_skills)[1:]
-      skill_choice = random.choice(skill_list)
-      if skill_choice in self.skills["skills"]:
+      skill_choice = random.choice(skill_list)[:]
+      #self.Print(skill_choice[0])
+      if skill_choice[0] in [ass[0] for ass in self.skills["skills"]]:
         skill_list.remove(skill_choice)
       else:
         skill = skill_choice
@@ -272,6 +279,7 @@ class CharacterBuilder:
       if attr not in p_attrs:
         attr = random.choice(p_attrs)
       self.basic_attributes[attr] += 2
+      self.updateAttrPoints(attr, 2)
     # Set the level of a copy of the skill and return the copy
     skill = self.setSkillLevel(skill[:])
 
@@ -294,10 +302,11 @@ class CharacterBuilder:
 
     self.updatePoints(cost, stat)
 
-  def increaseAttribute(self):
+  def increaseRandomAttribute(self):
     """
     """
     attrs = {}
+    # Find most common stat shared by skills
     for skill in self.skills["skills"]:
       try:
         attrs[skill[1]] += 1
@@ -305,47 +314,80 @@ class CharacterBuilder:
         attrs[skill[1]] = 1
     high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
     chance = random.random()
-    if chance < 0.81:
+    if chance < 0.4001:
       self.updateAttrPoints(high_attr, 1)
       self.basic_attributes[high_attr] += 1
     else:
       attr_choices = ["ST", "HT", "IQ", "DX"]
-      attr_choices.remove(high_attr)
-      highestestest_attr = random.choice(attr_choices)
-      self.updateAttrPoints(highestestest_attr, 1)
-      self.basic_attributes[highestestest_attr] += 1
+      if high_attr in attr_choices:
+        attr_choices.remove(high_attr)
+      highest_attr = random.choice(attr_choices)
+      self.updateAttrPoints(highest_attr, 1)
+      self.basic_attributes[highest_attr] += 1
+
+  def updateSkillLevels(self):
+    """
+    """
+    for skill in self.skills["skills"]:
+      skill.insert(-1, self.basic_attributes[skill[1]] + skill[-2])
+
+  def updateSecondaryAttributes(self):
+    """
+    """
+    self.basic_attributes["HP"] = self.basic_attributes["ST"]
+    self.basic_attributes["Per"] = self.basic_attributes["IQ"]
+    self.basic_attributes["Will"] = self.basic_attributes["IQ"]
+    self.basic_attributes["FP"] = self.basic_attributes["HT"]
+
+  def pickAdvantage(self, advantages_list):
+    """Picks and advantage! Yaaaayy!
+    
+    TODO:
+      Add S/M/P to skills and then randomly pick advantages with that category (weighted)
+      determine how to separate out the point cost of advantages
+      dropdown for exotic/supernatural
+      figure out what to do with variable
+      
+    """
+    self.advantages["advantages"].append(random.choice(advantages_list))
+
+  def runCharacterBuildLoop(self, all_skills):
+
+    skill_list = self.getPossibleSkills(all_skills)
+    advantage_list = [i for i in ADVANTAGES_LIST[:] if i[2] in self.advantages["adv_types"]]
+
+    while self.misc["spent_points"] > 0:
+      choice = random.random()
+      skill_points = sum([n[-1] for n in self.skills["skills"]])
+      if choice < 0.70001 and self.skills["skill_limit"] > skill_points:
+        self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
+      if (choice > 0.70001) and (choice < 0.85001):
+        #increase a stat
+        if not self.skills["skills"]:
+          continue
+        self.increaseRandomAttribute()
+      elif choice > 0.85:
+        self.pickAdvantage(advantage_list)
+        pass
 
   def build(self):
     """Assembles all attributes of the character.
     """
-    all_skills = list(SKILLS)[:]
+    # Sets height, weight, appearance and physical build
     self.setAppearance()
-    self.wealth.update(self.setWealth())    
+    # Sets starting wealth attributes
+    self.wealth.update(self.setWealth())
+    # Configures all other attributes of the character
     self.skills["skill_categories"] = self.chooseSkillCategories()
-    skill_list = self.getPossibleSkills(all_skills)
-
-    num_advantages = 0
-    num_attrs = 0
-    for i in xrange(15):
-      choice = random.randint(1, 3)
-      if choice == 1:
-        self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
-      if choice == 2:
-        #increase a stat
-        if not self.skills["skills"]:
-          continue
-        self.increaseAttribute()
-      if choice == 3:
-        #add an advantage
-        num_advantages += 1
-
-    
-    #if spent_points > point total: pickDisadvantage(point_limit)
-    
-    self.skills["skills"] = self.formattedSkills(self.skills["skills"])
+    self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3] <= self.misc["TL"]])   
+    self.updateSecondaryAttributes()
+    self.updateSkillLevels()
+    self.skills["skills"] = self.formattedSkills(self.skills["skills"], SKILL_HEADER)
+    self.advantages["advantages"] = self.formattedSkills(
+        self.advantages["advantages"], ADVANTAGE_HEADER)
     self.calculateMisc()
 
-    self.advantages["a_notice"] = num_advantages
+    self.advantages["a_notice"] = "Feature coming soon!"
     self.disadvantages["d_notice"] = "Feature coming soon!"
 
 

@@ -5,7 +5,7 @@ Created on Jul 31, 2013
 '''
 
 
-BUILD_TABLE = [["Skinny", "Average", "Overweight", "Fat", "Very Fat"],
+BUILD_TABLE = [["Skinny -5", "Average 0", "Overweight -1", "Fat -3", "Very Fat -5"],
                [(40,80),   (60,120),  (80,160),  (90,180),  (120,240)], 
                [(50,90),   (75,135),  (100,175), (115,205), (150,270)], 
                [(60,100),  (90,150),  (120,195), (135,225), (180,300)], 
@@ -37,24 +37,24 @@ APPEARANCE_TABLE = [["Horrific", "Monstrous", "Hideous", "Ugly", "Unattractive",
                      "Your appearance gives you no reaction modifiers either way; you can blend easily into a crowd. A viewer's impression of your looks depends on your behavior. If you smile and act friendly, you will be remembered as pleasant-looking; if you frown and mutter, you will be remembered as unattractive.",
                      "You don't enter beauty contests, but are definitely good-looking. This gives +1 on reaction rolls. 4 points.",
                      "You could enter beauty contests. This gives +4 on reaction rolls made by those attracted to members of your sex, +2 from everyone else. 12 points.",
-                     "You could win beauty contests  regularly. This gives +6 on reaction rolls made by those attracted to members of your sex, +2 from others. Exception: Members of the same sex with reason to dislike you (more than -4 in reaction penalties, regardless of bonuses) resent your good looks, and react at -2 instead. As well, talent scouts, friendly drunks, slave traders, and other nuisances are liable to become a problem for you. 16 points",
+                     "You could win beauty contests regularly. This gives +6 on reaction rolls made by those attracted to members of your sex, +2 from others. Exception: Members of the same sex with reason to dislike you (more than -4 in reaction penalties, regardless of bonuses) resent your good looks, and react at -2 instead. As well, talent scouts, friendly drunks, slave traders, and other nuisances are liable to become a problem for you. 16 points",
                      "You are an ideal specimen. This gives +8 (!) on reaction rolls made by those attracted to members of your sex, +2 from others,and all the troublesome side effects of Very Handsome. 20 points"],
                     [-24, -20, -16, -8, -4, 0, 4, 12, 16, 20]]
 
 
 
-WEALTH_TABLE = [["Dead Broke", "Poor", "Struggling", "Average", "Comfortable", "Wealthy", "Filthy Rich", "Multimillionaire"],
+WEALTH_TABLE = [["Dead Broke", "Poor", "Struggling", "Average", "Comfortable", "Wealthy", "Very Wealthy", "Filthy Rich", "Multimillionaire"],
                 ["You have no job, no source of income, no money, and no property other than the clothes you are wearing. Either you are unable to work or there are no jobs to be found. -25",
                  "Your starting wealth is only 1/5 of the average for your society. Some jobs are not available to you, and no job you find pays very well. -15",
                  "Your starting wealth is only 1/2 of the average for your society. Any job is open to you (you can be a Struggling doctor or movie actor), but you don't earn much. This is appropriate if you are, for instance, a 21st-century student. -10 points.",
-                 "The default wealth level. 0 points. Comfortable: You work for a living, but your lifestyle is better than most. Your starting wealth is twice the average. 10 points.",
+                 "The default wealth level. 0 points.",
+                 "Comfortable: You work for a living, but your lifestyle is better than most. Your starting wealth is twice the average. 10 points.",
                  "Your starting wealth is five times average; you live very well indeed. 20 points.",
                  "Your starting wealth is 20 times the average. 30 points",
                  "Your starting wealth is 100 times average. You can buy almost anything you want without considering the cost",
                  "Filthy rich doesn't even begin to describe your wealth! For every 25 points you spend beyond the 50 points to be Filthy Rich, increase your starting wealth by another factor of 10: Multimillionaire 1 costs 75 points and gives 1,000 times average starting wealth, Multimillionaire 2 costs 100 points gives 10,000 times starting wealth, and so on. 50 points + 25 points/level of Multimillionaire."],
                 [0, .2, .5, 1, 2, 5, 20, 100, 1000],
                 [-25, -15, -10, 0, 10, 20, 30, 50, 75]]
-
 
 STARTING_WEALTH = [250, 500, 750, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 50000, 75000, 100000]
   
