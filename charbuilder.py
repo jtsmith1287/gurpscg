@@ -278,7 +278,6 @@ class CharacterBuilder:
       p_attrs =  ["ST", "DX", "IQ"]
       if attr not in p_attrs:
         attr = random.choice(p_attrs)
-      self.basic_attributes[attr] += 2
       self.updateAttrPoints(attr, 2)
     # Set the level of a copy of the skill and return the copy
     skill = self.setSkillLevel(skill[:])
@@ -300,7 +299,7 @@ class CharacterBuilder:
     elif stat == "HP":
       cost = mod * 2
 
-    self.updatePoints(cost, stat)
+    self.updatePoints(cost)
 
   def increaseRandomAttribute(self):
     """
