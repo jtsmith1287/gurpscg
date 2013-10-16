@@ -35,7 +35,9 @@ class GenerationPage(webapp2.RequestHandler):
     try:
       fd = {"points": int(self.request.get("points")),
             "tl": int(self.request.get("Tech Level")),
-            "adv_types": self.request.get("mundane", "exotic", "supernatural")
+            "adv_types": [self.request.get("mundane"),
+                          self.request.get("exotic"),
+                          self.request.get("supernatural")]
             }
       new_character = charbuilder.CharacterBuilder(fd)
       # Write the generated character to the page after formatting
@@ -47,11 +49,7 @@ class GenerationPage(webapp2.RequestHandler):
 
 handlers = [("/", MainPage),
             ("/generated", GenerationPage)]
-application = webapp2.WSGIApplication(handlers, debug=True)
-
-if __name__ == "__main__":
-  charbuilder.CharacterBuilder(500)
-  
+application = webapp2.WSGIApplication(handlers, debug=True)  
 
 
 

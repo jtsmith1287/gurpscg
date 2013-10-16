@@ -287,7 +287,6 @@ class CharacterBuilder:
   def updateAttrPoints(self, stat, mod):
     """
     """
-    print stat
     if stat in ["DX", "IQ"]:
       cost = mod * 20
     elif stat in ["ST", "HT"]:
@@ -349,6 +348,7 @@ class CharacterBuilder:
       
     """
     self.advantages["advantages"].append(random.choice(advantages_list))
+    pass
 
   def runCharacterBuildLoop(self, all_skills):
 
@@ -390,5 +390,19 @@ class CharacterBuilder:
     self.disadvantages["d_notice"] = "Feature coming soon!"
 
 
+if __name__ == "__main__":
 
+  def mergeDicts(master_dict):
+    new_dict = []
+    for dictionary in master_dict.keys():
+      if not dictionary:
+        continue
+      new_dict.extend(master_dict[dictionary].items())
+    return dict(new_dict)
+
+  fd = {"points": 150,
+      "tl": 11,
+      "adv_types": ["-", "X", "Sup"]
+      }
+  nc = CharacterBuilder(fd)  
 
