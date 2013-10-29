@@ -18,8 +18,16 @@
 		margin: 0 auto;}</style>
 <body>
  <div id="wrap">
-  %(print)s
   <a href="http://www.sjgames.com/gurps/"> <img height="84" src="/images/gurps.jpg" width="693" style=float:"middle" /></a><br><br>
+  <br>
+  <table>
+    <form action="/" method="post">
+      <input type="submit" value="Regenerate">
+    </form>
+    <form action="/" method="get">
+      <input type="submit" value="New Parameters">
+    </form>
+  </table>
   <h3>
    <b><u>Points</u></b></h3>
 	<b>Total:</b> %(total_points)s | <b>Remaining:</b> %(spent_points)s
@@ -43,32 +51,40 @@
    </font></p>
    
   <h3>
-   <u>Appearance</u></h3>
-  <p><font size="2">
-   <b>Build:</b> %(build)s<br />
-   <b>Physical Appearance:</b> %(physical_appearance)s<br />
-   <b>Age:</b> %(age)s | <b>Sex:</b> %(gender)s<br />
-   <b>Weight:</b> %(weight)s | <b>Height:</b> %(height)s
-   </font></p>
+    <u>Appearance</u></h3>
+    <p><font size="2">
+      <b>Build:</b> %(build)s<br />
+      <b>Physical Appearance:</b> %(physical_appearance)s<br />
+      <b>Age:</b> %(age)s | <b>Sex:</b> %(gender)s<br />
+      <b>Weight:</b> %(weight)s | <b>Height:</b> %(height)s
+      </font></p>
   <h3>
-   <u>Wealth</u></h3>
-  <p><font size="2">
-   <b>Starting Cash:</b> $%(starting_cash)s<br />
-   <b>Wealth Status:</b> %(status)s<br />
-   %(status_description)s </font></p>
+    <u>Wealth</u></h3>
+    <p><font size="2">
+      <b>Starting Cash:</b> $%(starting_cash)s<br />
+      <b>Wealth Status:</b> %(status)s<br />
+      %(status_description)s </font></p>
   <h3>
    <u>Skills</u></h3>
     %(focus)s <br><br>
     %(skills)s
   <h3>
-   <u>Advantages</u></h3>
-   %(advantages)s
+    <u>Advantages</u></h3>
+    %(advantages)s
   <h3>
-   <u>Disadvantages</u></h3>
+    <u>Disadvantages</u></h3>
   <h4>
-   Disadvantage Limit: %(disadvantage_limit)s</h4>
-  %(d_notice)s
+    Disadvantage Limit: %(disadvantage_limit)s</h4>
+    %(d_notice)s
   <br />
+  <table>
+    <form action="/" method="post">
+      <input type="submit" value="Regenerate">
+    </form>
+    <form action="/" method="get">
+      <input type="submit" value="New Parameters">
+    </form>
+  </table>
   <br />
   <br />
   ----- <br>

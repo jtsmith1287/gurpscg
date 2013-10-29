@@ -11,11 +11,13 @@ import random
 from stuff.utilities import utils
 from stuff.tables import *
 from stuff.headers import *
+from stuff.parser import Parse
 from traits.advantages import *
-#from traits.disadvantages import *
 from traits.skills import *
+from traits.disadvantages import *
 
-
+parser = Parse()
+parse = parser.parse
 
 class CharacterBuilder:
   """Forms everything about the character."""
@@ -38,20 +40,14 @@ class CharacterBuilder:
                    "skill_limit": self.misc["total_points"] * 0.24}
     self.advantages = {"advantages": [],
                        "adv_types": form_data["adv_types"]}
-    self.disadvantages = {"disadvantage_limit": random.randint(0, int(form_data["points"] * 0.5))}
-    self.logs = {"print":[]}
+    self.disadvantages = {"disadvantages": [],
+                          "disadv_types": form_data["disadv_types"],
+                          "disadvantage_limit": self.calcDisadvantageLimit(
+        form_data["points"], form_data["d_limit"])}
 
     self.build()
 
-  def Print(self, *args):
-
-    try:
-      msg = "".join(args)
-    except TypeError:
-      msg = args
-    self.logs["print"].extend(["%s<br>" %(str(msg))])
-
-  def updatePoints(self, points, stat=None):
+  def updatePoints(self, points):
 
     self.misc["spent_points"] -= points; return True
 
@@ -104,9 +100,8 @@ class CharacterBuilder:
     wealth["starting_cash"] = "{:,}".format(int(starting_wealth * wealth_details[1]))
     wealth["status"] = wealth_status
     wealth["status_description"] = wealth_details[0]
+    self.wealth.update(wealth)
     self.updatePoints(wealth_details[-1])
-    
-    return wealth
 
   def calculateMisc(self):
 
@@ -139,7 +134,7 @@ class CharacterBuilder:
     skill_cats = []
     for i in xrange(random.randint(1, 3)):
       while True:
-        cat = random.choice(SKILL_CATEGORIES)
+        cat = random.choice(list(SKILL_CATEGORIES))
         if cat not in skill_cats:
           skill_cats.append(cat)
           break
@@ -161,11 +156,11 @@ class CharacterBuilder:
     for stat,value in self.basic_attributes.items():
       if value >= biggest and stat in primary_stats:
         max_attrs.append(stat)
-    max_attr =  random.choice(max_attrs)
+    max_attr = random.choice(max_attrs)
 
     return max_attr
 
-  def formattedSkills(self, item_list, header=None):
+  def formattedItems(self, item_list, header=None):
     """Formats a list of items into html.
     
     Args:
@@ -192,7 +187,7 @@ class CharacterBuilder:
     """
     possible_skills = []
 
-    for skill in skills[1:]:
+    for skill in skills:
       if self.misc["TL"] >= skill[3]:
         for cat in self.skills["skill_categories"]:
           if cat in skill[-1] and skill not in possible_skills:
@@ -265,7 +260,7 @@ class CharacterBuilder:
       elif probable_skills and chance == 1:
         skill_list = probable_skills
       else:
-        skill_list = list(all_skills)[1:]
+        skill_list = list(all_skills)
       skill_choice = random.choice(skill_list)[:]
       #self.Print(skill_choice[0])
       if skill_choice[0] in [ass[0] for ass in self.skills["skills"]]:
@@ -345,15 +340,48 @@ class CharacterBuilder:
       determine how to separate out the point cost of advantages
       dropdown for exotic/supernatural
       figure out what to do with variable
-      
     """
-    self.advantages["advantages"].append(random.choice(advantages_list))
-    pass
+    pa = self.getPrimaryAttribute()
+    if pa in ["HT", "ST", "DX"]:
+      attr_type = "P"
+    else: 
+      attr_type = random.choice(["M", "Soc"])
+
+    if random.random() > .05:
+      pa_based_list = [i for i in advantages_list if i[1] == attr_type and i[0] not in [
+          name[0] for name in self.advantages["advantages"]]]
+      chosen_advantage = random.choice(pa_based_list)[:]
+    else:
+      while True:
+        chosen_advantage = random.choice(advantages_list)[:]
+        if chosen_advantage[0] not in [i[0] for i in self.advantages["advantages"]]:
+          break
+    
+    points = parse(chosen_advantage[3])
+    self.updatePoints(points)
+    chosen_advantage[3] = points
+    self.advantages["advantages"].append(chosen_advantage)
+
+  def pickDisadvantage(self, disadvantages_list):
+
+    self.disadvantages["disadvantages"].append(random.choice(disadvantages_list))
+
+  def calcDisadvantageLimit(self, points, limit_key):
+    
+    if int(limit_key) == 0:
+      d_limit = random.randint(0, int(points * 0.5))
+    else:
+      d_limit = int(limit_key)
+    
+    return d_limit
 
   def runCharacterBuildLoop(self, all_skills):
 
     skill_list = self.getPossibleSkills(all_skills)
-    advantage_list = [i for i in ADVANTAGES_LIST[:] if i[2] in self.advantages["adv_types"]]
+    advantage_list = [
+        i for i in ADVANTAGES_LIST[:] if i[2] in self.advantages["adv_types"]]
+    disadvantages_list = [
+        i for i in DISADVANTAGES_LIST[:] if i[2] in self.disadvantages["disadv_types"]]
 
     while self.misc["spent_points"] > 0:
       choice = random.random()
@@ -367,7 +395,8 @@ class CharacterBuilder:
         self.increaseRandomAttribute()
       elif choice > 0.85:
         self.pickAdvantage(advantage_list)
-        pass
+        self.pickDisadvantage(disadvantages_list)
+        
 
   def build(self):
     """Assembles all attributes of the character.
@@ -375,19 +404,21 @@ class CharacterBuilder:
     # Sets height, weight, appearance and physical build
     self.setAppearance()
     # Sets starting wealth attributes
-    self.wealth.update(self.setWealth())
+    self.setWealth()
     # Configures all other attributes of the character
     self.skills["skill_categories"] = self.chooseSkillCategories()
     self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3] <= self.misc["TL"]])   
     self.updateSecondaryAttributes()
     self.updateSkillLevels()
-    self.skills["skills"] = self.formattedSkills(self.skills["skills"], SKILL_HEADER)
-    self.advantages["advantages"] = self.formattedSkills(
+    self.skills["skills"] = self.formattedItems(self.skills["skills"], SKILL_HEADER)
+    self.advantages["advantages"] = self.formattedItems(
         self.advantages["advantages"], ADVANTAGE_HEADER)
-    self.calculateMisc()
+    self.disadvantages["disadvantages"] = self.formattedItems(
+        self.disadvantages["disadvantages"], DISADVANTAGE_HEADER)
 
     self.advantages["a_notice"] = "Feature coming soon!"
     self.disadvantages["d_notice"] = "Feature coming soon!"
+    self.calculateMisc()
 
 
 if __name__ == "__main__":
