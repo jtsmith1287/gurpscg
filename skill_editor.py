@@ -8,9 +8,14 @@ import Tkinter as tk
 import tkMessageBox as tkmsg
 import re
 
-
-with open("C:\\Users\\Justin\\Projects\\gurpscg\\gurpscg\\traits\\skills.dat", "r") as file:
-  DATA = file.readlines()
+try:
+  FILE = "C:\\Users\\Justin\\Projects\\gurpscg\\gurpscg\\traits\\skills.dat"
+  with open(FILE, "r") as file:
+    DATA = file.readlines()
+except IOError:
+  FILE = "/Users/jusmith/Documents/workspace/gurpscg/gurpscg/traits/skills.dat"
+  with open(FILE, "r") as file:
+    DATA = file.readlines()
 
 
 class Application(tk.Frame):
@@ -33,6 +38,13 @@ class Application(tk.Frame):
     self.skill_index = None
     self.stats = tk.StringVar()
     self.run()
+
+  def listboxSelect(self, listbox, index):
+    
+    listbox.select_clear(tk.ACTIVE)
+    listbox.activate(index)
+    listbox.selection_set(tk.ACTIVE)
+    listbox.see(index + 10)
 
   def populateSkillList(self):
     
@@ -149,9 +161,7 @@ class Application(tk.Frame):
     self.saveData()
     self.updateData()
     self.populateSkillList()
-    self.skill_list_listbox.see(self.listbox_position + 10)
-    self.skill_list_listbox.activate(self.listbox_position + 1)
-
+    self.listboxSelect(self.skill_list_listbox, self.listbox_position + 1)
 
   def cancelSkill(self):
 
@@ -166,9 +176,7 @@ class Application(tk.Frame):
     current_pos = listbox_contents.index(active)
     if current_pos + 1 >= 0:
       new_pos = current_pos + 1
-      self.skill_list_listbox.activate(new_pos)
-      self.skill_list_listbox.select_clear(current_pos)
-      self.skill_list_listbox.selection_set(tk.ACTIVE)
+      self.listboxSelect(self.skill_list_listbox, new_pos)
   
   def previousSkill(self):
     
@@ -177,13 +185,35 @@ class Application(tk.Frame):
     current_pos = listbox_contents.index(active)
     if current_pos + 1 >= 0:
       new_pos = current_pos - 1
-      self.skill_list_listbox.activate(new_pos)
-      self.skill_list_listbox.select_clear(current_pos)
-      self.skill_list_listbox.selection_set(tk.ACTIVE)
+      self.listboxSelect(self.skill_list_listbox, new_pos)
 
-  def searchActiveList(self):
+  def searchActiveList(self, event=None):
     
-    print "search!"
+    #TODO: listbox should be the current active listbox
+    item_list = self.skill_list_listbox.get(0, tk.END)
+    if event:
+      search_term = event.widget.get()
+    else:
+      search_term = self.searchbar_stringvar.get()
+    result = None
+    for list_index,word_case in enumerate(item_list):
+      word = word_case.lower()
+      match = True
+      if word == search_term:
+        break
+      if len(word) < len(search_term):
+        match = False
+        break
+      for idx in xrange(len(search_term)):
+        if word[idx] != search_term[idx]:
+          match = False
+      if match:
+        result = word
+        break
+    if result:
+      self.listboxSelect(self.skill_list_listbox, list_index)
+    else:
+      tkmsg.showerror("Nil Cat!", "That search yielded nothing.")
 
   def _layoutSkillEditorArea(self):
     """Internal method configureColsRows the skill editor panel."""
@@ -243,40 +273,42 @@ class Application(tk.Frame):
   def gridWidgets(self):
 
     Y = 5
-    self.searchbar_area.grid(row=0,
-                             column=1,
-                             pady=Y,
-                             sticky=tk.N+tk.S+tk.W)
-    self.searchbar_entry.grid(row=0,
-                              column=0,
-                              pady=Y,
-                              padx=2)
-    self.searchbar_button.grid(row=0,
-                               column=1,
-                               pady=Y,
-                               padx=2)
+    # Grid areas
     self.listbox_area.grid(row=0,
                            column=0,
                            sticky=tk.N+tk.S+tk.W+tk.E)
-    self.next_button.grid(row=0,
-                          column=2,
-                          pady=Y,
-                          sticky=tk.E)
-    self.previous_button.grid(row=0,
-                          column=0,
-                          pady=Y,
-                          sticky=tk.W)
-    self.skill_list_listbox.grid(row=1,
-                                 column=0,
-                                 columnspan=2,
-                                 sticky=tk.N+tk.S+tk.W+tk.E)
-    self.skill_list_scrollbar.grid(row=1,
-                                   column=2,
-                                   sticky=tk.N+tk.S+tk.W)
+    self.searchbar_area.grid(row=0,
+                             column=1,
+                             pady=Y,
+                             sticky=tk.N)
     self.button_area.grid(row=0,
                           column=1,
                           sticky=tk.N+tk.S,
                           pady=10)
+
+    # listbox widgets
+    self.previous_button.grid(row=0,
+                          column=0,
+                          pady=Y,
+                          sticky=tk.NW)
+    self.searchbar_entry.grid(row=0,
+                              column=0)
+    self.searchbar_button.grid(row=0,
+                               column=1)
+    self.next_button.grid(row=0,
+                          column=2,
+                          pady=Y,
+                          sticky=tk.NE)
+
+    self.skill_list_listbox.grid(row=1,
+                                 column=0,
+                                 columnspan=3,
+                                 sticky=tk.N+tk.S+tk.W+tk.E)
+    self.skill_list_scrollbar.grid(row=1,
+                                   column=3,
+                                   sticky=tk.N+tk.S+tk.W)
+    
+    # Action button widgets
     self.select_skill_button.grid(row=1,
                                   column=0,
                                   pady=Y,
@@ -291,16 +323,20 @@ class Application(tk.Frame):
                           column=0,
                           pady=Y,
                           sticky=tk.E+tk.W+tk.N)
+    # Stats label
     self.stats_label.grid(row=self.grid_size()[1] -1,
                           column=self.grid_size()[0] -1,
                           pady=Y,
                           sticky=tk.S+tk.W)
 
+    # Configure specific frames
+    self.listbox_area.rowconfigure(1, weight=1)
+    for i in xrange(self.listbox_area.grid_size()[0]):
+      self.listbox_area.columnconfigure(i, weight=1)
+
   def createWidgets(self):
     
     self.listbox_area = tk.Frame(self, bg=self.bg)
-    self.listbox_area.columnconfigure(0, weight=1)
-    self.listbox_area.rowconfigure(1, weight=1)
     self.skill_editor_area = tk.Frame(self, bg=self.bg)
     self.category_editor_area = tk.Frame(self, bg=self.bg)
     self.button_area = tk.Frame(self, bg=self.bg)
@@ -310,6 +346,7 @@ class Application(tk.Frame):
     self.searchbar_entry = tk.Entry(self.searchbar_area,
                                     textvariable=self.searchbar_stringvar,
                                     width=35)
+    self.searchbar_entry.bind("<Return>", self.searchActiveList)
     self.searchbar_button = tk.Button(self.searchbar_area,
                                       width=7,
                                       text="Search",
@@ -378,7 +415,7 @@ class Application(tk.Frame):
                                            command=self.cancelNewCategory)
 
   def saveData(self):
-    with open("C:\\Users\\Justin\\Projects\\gurpscg\\gurpscg\\traits\\skills.dat", "w") as file:
+    with open(FILE, "w") as file:
       file.writelines(DATA)
 
   def updateData(self):
@@ -406,5 +443,5 @@ class Application(tk.Frame):
 if __name__ == "__main__":
   app = Application("#999")
   app.master.title("Skill Editor")
-  app.master.geometry("700x600+200+200")
+  app.master.geometry("900x800+200+200")
   app.mainloop()

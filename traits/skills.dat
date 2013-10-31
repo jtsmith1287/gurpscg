@@ -130,7 +130,7 @@
 ['Climbing', 'DX', 'A', 0, [], '183', ['Spy', 'Outdoor', 'Athletic', 'Exploration']]
 ['Flight', 'HT', 'A', 0, ['Flight'], '195', ['Athletic']]
 ["Free Fall", "DX", "A", 0, "197", []]
-["Hiking", "HT", "A", 0, "200", []]
+['Hiking', 'HT', 'A', 0, [], '200', ['Sports', 'Everyman', 'Outdoor', 'Athletic']]
 ["Jumping", "DX", "E", 0, "203", []]
 ["Lifting", "HT", "A", 0, "205", []]
 ["Parachuting/TL", "DX", "E", 0, "212", []]
