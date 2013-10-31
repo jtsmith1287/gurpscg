@@ -5,5 +5,12 @@ Created on Aug 5, 2013
 '''
 import random
 if __name__ == "__main__":
-  y = 9.0
-  print sum([1 if random.random() < (6.0/9.0) else 0 for i in xrange(int(y))])
+
+  stuff = ["birds", "canine", "monkey", "really really stupid"]
+  
+  search_term = raw_input(": ")
+
+  for word in stuff:
+    match = False
+    for idx in xrange(len(search_term)):
+      if word[idx] !=
