@@ -200,6 +200,7 @@ class Application(tk.Frame):
       word = word_case.lower()
       match = True
       if word == search_term:
+        result = word
         break
       if len(word) < len(search_term):
         match = False
