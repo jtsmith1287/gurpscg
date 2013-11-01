@@ -25,7 +25,7 @@ class Application(tk.Frame):
                       bg=bg_color)
 
     # Allow for window resizing
-    top=self.winfo_toplevel()                
+    top = self.winfo_toplevel()                
     top.rowconfigure(0, weight=1)
     top.columnconfigure(0, weight=1)         
     self.rowconfigure(0, weight=1)
@@ -37,7 +37,7 @@ class Application(tk.Frame):
     self.skill = None
     self.skill_index = None
     self.stats = tk.StringVar()
-    self.run()
+    self._run()
 
   def listboxSelect(self, listbox, index):
     
@@ -50,7 +50,7 @@ class Application(tk.Frame):
     
     self.incomplete_count = 0
     self.skill_list_listbox.delete(0, tk.END)
-    self.skill_list_listbox.delete(0, tk.END)
+    self.skill_list_listbox.delete(tk.END)
     for i in sorted(self.skill_list):
       if i[-1]:
         name = i[0]
@@ -101,10 +101,10 @@ class Application(tk.Frame):
       new_cat = " ".join([i[0].upper() + i[1:].lower() for i in new_cat])
       self.skill_categories.add(new_cat)
       self.cancel_newCategory()
-      self.layoutSkillEditorArea()
+      self._layoutSkillEditorArea()
     else:
       tkmsg.showerror(
-          "Type Somethin'", "Sorry, Boss. We can't have nil cats runnin'round!")
+          "Type Somethin'", "Sorry, Boss. We can't have nil cats _runnin'round!")
 
   def cancel_newCategory(self):
     
@@ -136,7 +136,7 @@ class Application(tk.Frame):
                                   sticky=tk.W+tk.E+tk.N+tk.S)
     else:
       self.skill = None
-    self.layoutSkillEditorArea()
+    self._layoutSkillEditorArea()
     self._configureColsRows()
 
   def _saveSkill(self):
@@ -171,6 +171,8 @@ class Application(tk.Frame):
   
   def nextSkill(self):
     
+    # TODO: This should work with the active listbox
+
     active = self.skill_list_listbox.get(tk.ACTIVE)
     listbox_contents = self.skill_list_listbox.get(0,tk.END)
     current_pos = listbox_contents.index(active)
@@ -180,6 +182,8 @@ class Application(tk.Frame):
   
   def previousSkill(self):
     
+    # TODO: This should work with the active listbox
+
     active = self.skill_list_listbox.get(tk.ACTIVE)
     listbox_contents = self.skill_list_listbox.get(0,tk.END)
     current_pos = listbox_contents.index(active)
@@ -216,7 +220,7 @@ class Application(tk.Frame):
     else:
       tkmsg.showerror("Nil Cat!", "That search yielded nothing.")
 
-  def layoutSkillEditorArea(self):
+  def _layoutSkillEditorArea(self):
     """Internal method _configureColsRows the skill editor panel."""
   
     for widget in self.skill_editor_area.grid_slaves():
@@ -271,7 +275,7 @@ class Application(tk.Frame):
                                   columnspan=3,
                                   pady=30)
 
-  def gridWidgets(self):
+  def _gridWidgets(self):
 
     Y = 5
     # Grid areas
@@ -335,7 +339,7 @@ class Application(tk.Frame):
     for i in xrange(self.listbox_area.grid_size()[0]):
       self.listbox_area.columnconfigure(i, weight=1)
 
-  def createWidgets(self):
+  def _createWidgets(self):
     
     self.listbox_area = tk.Frame(self, bg=self.bg)
     self.skill_editor_area = tk.Frame(self, bg=self.bg)
@@ -416,11 +420,12 @@ class Application(tk.Frame):
                                            command=self.cancel_newCategory)
 
   def saveData(self):
-    with open(FILE, "w") as file:
-      file.writelines(DATA)
+    with open(FILE, "w") as f:
+      f.writelines(DATA)
 
   def updateData(self):
     
+    #TODO: This should populate all lists.
     self.skill_count = 0
     self.skill_categories = set([])
     self.skill_list = []
@@ -431,13 +436,13 @@ class Application(tk.Frame):
       for cat in skill[-1]:
         self.skill_categories.add(cat)
 
-  def run(self):
+  def _run(self):
     
     self.updateData()
     self.grid()
-    self.createWidgets()
+    self._createWidgets()
     self._populateSkillList()
-    self.gridWidgets()
+    self._gridWidgets()
     self._configureColsRows()
     
 
