@@ -46,7 +46,7 @@ class Application(tk.Frame):
     listbox.selection_set(tk.ACTIVE)
     listbox.see(index + 10)
 
-  def populateSkillList(self):
+  def _populateSkillList(self):
     
     self.incomplete_count = 0
     self.skill_list_listbox.delete(0, tk.END)
@@ -58,9 +58,9 @@ class Application(tk.Frame):
         name = i[0] + " ... Incomplete!"
         self.incomplete_count += 1
       self.skill_list_listbox.insert(tk.END, name)
-    self.updateStatsWidget()
+    self._updateStatsWidget()
 
-  def updateStatsWidget(self):
+  def _updateStatsWidget(self):
     
     stats = "Skills: %(skill_count)s\nUnconfigured: %(incomplete_count)s" %(
         self.__dict__)
@@ -68,7 +68,7 @@ class Application(tk.Frame):
     stats += "\nWinning: %s%%" % percent
     self.stats.set(stats)
 
-  def configureColsRows(self):
+  def _configureColsRows(self):
     
     col, row = self.grid_size()
     for i in range(col):
@@ -76,7 +76,7 @@ class Application(tk.Frame):
     for i in range(row):
       self.grid_rowconfigure(i, pad=20,)
 
-  def newCategory(self):
+  def _newCategory(self):
     
     self.category_editor_area.grid(column=self.grid_size()[0],
                                    row=0)
@@ -92,30 +92,30 @@ class Application(tk.Frame):
                                     column=1,
                                     padx=5,
                                     sticky=tk.E+tk.W)
-    self.configureColsRows()
+    self._configureColsRows()
 
-  def saveCategory(self):
+  def _saveCategory(self):
     
     new_cat = self.category_entry_var.get().split()
     if new_cat:
       new_cat = " ".join([i[0].upper() + i[1:].lower() for i in new_cat])
       self.skill_categories.add(new_cat)
-      self.cancelNewCategory()
-      self._layoutSkillEditorArea()
+      self.cancel_newCategory()
+      self.layoutSkillEditorArea()
     else:
       tkmsg.showerror(
           "Type Somethin'", "Sorry, Boss. We can't have nil cats runnin'round!")
 
-  def cancelNewCategory(self):
+  def cancel_newCategory(self):
     
     self.category_editor_area.grid_forget()
 
   def selectSkill(self, event=None):
     
+    # TODO: This method should work with whatever the active listbox is instead of
+    #       the static skill_list_listbox
     if event:
-      widget = event.widget
-      selection=widget.curselection()
-      raw_name = widget.get(selection[0])
+      raw_name = event.widget.get(event.widget.curselection()[0])
     else:
       raw_name = self.skill_list_listbox.get(tk.ACTIVE)
     skill_name = raw_name.split(" ... ")[0].strip()
@@ -136,10 +136,10 @@ class Application(tk.Frame):
                                   sticky=tk.W+tk.E+tk.N+tk.S)
     else:
       self.skill = None
-    self._layoutSkillEditorArea()
-    self.configureColsRows()
+    self.layoutSkillEditorArea()
+    self._configureColsRows()
 
-  def saveSkill(self):
+  def _saveSkill(self):
 
     kitties = []
     for cat,check in self.checkboxes.items():
@@ -157,13 +157,13 @@ class Application(tk.Frame):
     else:
       print self.skill
     DATA[self.skill_index] = str(self.skill) + "\n"
-    self.cancelSkill()
+    self._cancelSkill()
     self.saveData()
     self.updateData()
-    self.populateSkillList()
+    self._populateSkillList()
     self.listboxSelect(self.skill_list_listbox, self.listbox_position + 1)
 
-  def cancelSkill(self):
+  def _cancelSkill(self):
 
     self.skill = None
     self.skill_index = None
@@ -215,8 +215,8 @@ class Application(tk.Frame):
     else:
       tkmsg.showerror("Nil Cat!", "That search yielded nothing.")
 
-  def _layoutSkillEditorArea(self):
-    """Internal method configureColsRows the skill editor panel."""
+  def layoutSkillEditorArea(self):
+    """Internal method _configureColsRows the skill editor panel."""
   
     for widget in self.skill_editor_area.grid_slaves():
       widget.grid_forget()
@@ -375,7 +375,7 @@ class Application(tk.Frame):
                                          command=self.selectSkill)
     self.new_category_button = tk.Button(self.button_area,
                                          text="New Category",
-                                         command=self.newCategory)
+                                         command=self._newCategory)
     self.refresh_button = tk.Button(self.button_area,
                                     text="Refresh",
                                     command=self.updateData)
@@ -384,7 +384,7 @@ class Application(tk.Frame):
                                  command=self.quit)
     self.submit_skill_button = tk.Button(self.skill_editor_area,
                                    text="Submit",
-                                   command=self.saveSkill)
+                                   command=self._saveSkill)
     self.tech_level_spinbox = tk.Spinbox(self.skill_editor_area,
                                          from_=0,
                                          to_=13)
@@ -397,7 +397,7 @@ class Application(tk.Frame):
                                        width=40)
     self.cancel_skill_button = tk.Button(self.skill_editor_area,
                                          text="Cancel",
-                                         command=self.cancelSkill)
+                                         command=self._cancelSkill)
     tk.Label(self.category_editor_area,
              text="Enter a new category",
              bg=self.bg).grid(row=0,
@@ -409,10 +409,10 @@ class Application(tk.Frame):
                                    width=40)
     self.category_submit_button = tk.Button(self.category_editor_area,
                                             text="Submit",
-                                            command=self.saveCategory)
+                                            command=self._saveCategory)
     self.category_cancel_button = tk.Button(self.category_editor_area,
                                            text="Cancel",
-                                           command=self.cancelNewCategory)
+                                           command=self.cancel_newCategory)
 
   def saveData(self):
     with open(FILE, "w") as file:
@@ -435,9 +435,9 @@ class Application(tk.Frame):
     self.updateData()
     self.grid()
     self.createWidgets()
-    self.populateSkillList()
+    self._populateSkillList()
     self.gridWidgets()
-    self.configureColsRows()
+    self._configureColsRows()
     
 
 if __name__ == "__main__":
