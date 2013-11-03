@@ -3,20 +3,18 @@ Created on Aug 5, 2013
 
 @author: Justin
 '''
+
 import random
-if __name__ == "__main__":
+import os
+import glob
 
-  stuff = ["birds", "canine", "monkey", "really really stupid"]
-  
-  search_term = raw_input(": ")
-  search_result = None
+EXT = ".gdat"
+GDAT_DIR = "traits"
 
-  for word in stuff:
-    match = True
-    for idx in xrange(len(search_term)):
-      if word[idx] != search_term[idx]:
-        match = False
-    if match:
-      search_result = word
+current_dir = os.path.dirname(__file__)
+traits_dir = os.path.join(current_dir, GDAT_DIR)
 
-print search_result
+for root, dir, files in os.walk(traits_dir):
+  for file_ in files:
+    if file_.endswith(EXT):
+      print os.path.join(root, file_)

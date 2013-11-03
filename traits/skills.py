@@ -1,7 +1,7 @@
 
 import os.path
 
-file_path = os.path.join(os.path.dirname(__file__),"skills.dat")
+file_path = os.path.join(os.path.dirname(__file__),"skills.gdat")
 
 with open(file_path, "r") as f:
   DATA = f.readlines()

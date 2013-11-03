@@ -7,15 +7,24 @@ Created on Oct 25, 2013
 import Tkinter as tk
 import tkMessageBox as tkmsg
 import re
+import os
 
-try:
-  FILE = "C:\\Users\\Justin\\Projects\\gurpscg\\gurpscg\\traits\\skills.dat"
-  with open(FILE, "r") as file:
-    DATA = file.readlines()
-except IOError:
-  FILE = "/Users/jusmith/Documents/workspace/gurpscg/gurpscg/traits/skills.dat"
-  with open(FILE, "r") as file:
-    DATA = file.readlines()
+
+EXT = ".gdat"
+GDAT_DIR = "traits"
+data = {}
+gdats = {}
+current_dir = os.path.dirname(__file__)
+traits_dir = os.path.join(current_dir, GDAT_DIR)
+
+for root, dir, files in os.walk(traits_dir):
+  print dir
+  for file_ in files:
+    if file_.endswith(EXT):
+      gdat_name = file_.split(".")[0]
+      gdats[gdat_name] = os.path.join(root, file_)
+      with open(gdats[gdat_name], "r") as file:
+        data[gdat_name] = file.readlines()
 
 
 class Application(tk.Frame):
@@ -123,9 +132,9 @@ class Application(tk.Frame):
     for i in self.skill_list:
       if i[0] == skill_name:
         self.skill = i
-    for i in DATA:
+    for i in data["skills"]:
       if eval(i)[0] == skill_name:
-        self.skill_index = DATA.index(i)
+        self.skill_index = data["skills"].index(i)
         if type(self.skill[-3]) == type([]):
           self.skill_prereq_entry_var.set(", ".join(self.skill[-3]))
         else:
@@ -156,7 +165,7 @@ class Application(tk.Frame):
       self.skill[-3] = prereqs
     else:
       print self.skill
-    DATA[self.skill_index] = str(self.skill) + "\n"
+    data["skills"][self.skill_index] = str(self.skill) + "\n"
     self._cancelSkill()
     self.saveData()
     self.updateData()
@@ -420,8 +429,8 @@ class Application(tk.Frame):
                                            command=self.cancel_newCategory)
 
   def saveData(self):
-    with open(FILE, "w") as f:
-      f.writelines(DATA)
+    with open(gdats["skills"], "w") as f:
+      f.writelines(data["skills"])
 
   def updateData(self):
     
@@ -429,7 +438,7 @@ class Application(tk.Frame):
     self.skill_count = 0
     self.skill_categories = set([])
     self.skill_list = []
-    for line in DATA:
+    for line in data["skills"]:
       skill = eval(line)
       self.skill_count += 1
       self.skill_list.append(skill)

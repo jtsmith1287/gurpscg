@@ -1,6 +1,13 @@
 The following need a special method/calculation for stuff.
  - Secret Identity
+ - group performace (connnducting)
  - prerequisites
+ - multiple same skills
+
+The following skills can be chosen more than once
+ - Guns
+ 
+ 
  
  skilcats:
  animal
