@@ -16,9 +16,7 @@ data = {}
 gdats = {}
 current_dir = os.path.dirname(__file__)
 traits_dir = os.path.join(current_dir, GDAT_DIR)
-
 for root, dir, files in os.walk(traits_dir):
-  print dir
   for file_ in files:
     if file_.endswith(EXT):
       gdat_name = file_.split(".")[0]
@@ -308,7 +306,8 @@ class Application(tk.Frame):
     self.searchbar_entry.grid(row=0,
                               column=0)
     self.searchbar_button.grid(row=0,
-                               column=1)
+                               column = 1,
+                               padx = 5)
     self.next_button.grid(row=0,
                           column=2,
                           pady=Y,

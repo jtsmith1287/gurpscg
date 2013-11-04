@@ -12,9 +12,7 @@ from stuff.utilities import utils
 from stuff.tables import *
 from stuff.headers import *
 from stuff.parser import Parse
-from traits.advantages import *
-from traits.skills import *
-from traits.disadvantages import *
+from traits.traits import *
 
 parser = Parse()
 parse = parser.parse
@@ -130,15 +128,17 @@ class CharacterBuilder:
     # The key == how many skill categories the character will have.
     template = {1: "Focused",
                 2: "Specialized",
-                3: "Blended"}
+                3: "Blended",
+                4: "Well Rounded"}
     skill_cats = []
-    for i in xrange(random.randint(1, 3)):
+    for i in xrange(random.randint(1, len(template))):
       while True:
         cat = random.choice(list(SKILL_CATEGORIES))
         if cat not in skill_cats:
           skill_cats.append(cat)
           break
-    self.skills["focus"] = template[len(skill_cats)]
+    # self.skills["focus"] = template[len(skill_cats)]
+    self.skills["focus"] = skill_cats
     
     return skill_cats
 
