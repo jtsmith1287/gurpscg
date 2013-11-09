@@ -75,7 +75,7 @@
  ["Enhanced Tracking", "P", "X", "5/level", "53"]
  ["Extended Lifespan", "P", "X", "2/level", "53"]
  ["Extra Arms", "P", "X", "10/level", "53"]
- ["Extra Attack", "P", "-", "25/level", "53"]
+ ["Extra Attack", "P", "-", "25", "53"]
  ["Extra Head", "P", "X", "15/level", "54"]
  ["Extra Legs", "P", "X", "5, 10, or 15", "54"]
  ["Extra Life", "M", "X", "25/level", "55"]

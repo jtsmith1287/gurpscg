@@ -188,7 +188,7 @@ class CharacterBuilder:
     possible_skills = []
 
     for skill in skills:
-      if self.misc["TL"] >= skill[3]:
+      if self.misc["TL"] >= skill[3][0]:
         for cat in self.skills["skill_categories"]:
           if cat in skill[-1] and skill not in possible_skills:
             # [-1]: references category of the skill
@@ -243,6 +243,14 @@ class CharacterBuilder:
 
     return skill
 
+  def cleanSkill(self, skill):
+    """Removed unwanted syntax and makes skill look more purty
+    """
+    skill[3] = self.misc["TL"]
+    skill.pop(4)
+    
+    return skill
+
   def pickSkill(self, probable_skills, all_skills):
     """Picks a skill at random from skill_lists.
     
@@ -260,7 +268,7 @@ class CharacterBuilder:
       elif probable_skills and chance == 1:
         skill_list = probable_skills
       else:
-        skill_list = list(all_skills)
+        return
       skill_choice = random.choice(skill_list)[:]
       #self.Print(skill_choice[0])
       if skill_choice[0] in [ass[0] for ass in self.skills["skills"]]:
@@ -387,7 +395,11 @@ class CharacterBuilder:
       choice = random.random()
       skill_points = sum([n[-1] for n in self.skills["skills"]])
       if choice < 0.70001 and self.skills["skill_limit"] > skill_points:
-        self.skills["skills"].append(self.pickSkill(skill_list, all_skills))
+        raw_skill = self.pickSkill(skill_list, all_skills)
+        if not raw_skill:
+          continue
+        clean_skill = self.cleanSkill(raw_skill)
+        self.skills["skills"].append(clean_skill)
       if (choice > 0.70001) and (choice < 0.85001):
         #increase a stat
         if not self.skills["skills"]:
@@ -407,7 +419,7 @@ class CharacterBuilder:
     self.setWealth()
     # Configures all other attributes of the character
     self.skills["skill_categories"] = self.chooseSkillCategories()
-    self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3] <= self.misc["TL"]])   
+    self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3][0] <= self.misc["TL"]])   
     self.updateSecondaryAttributes()
     self.updateSkillLevels()
     self.skills["skills"] = self.formattedItems(self.skills["skills"], SKILL_HEADER)

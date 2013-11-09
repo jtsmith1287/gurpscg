@@ -152,7 +152,8 @@ class Application(tk.Frame):
     for cat,check in self.checkboxes.items():
       if check.get() == 1:
         kitties.append(cat)
-    self.skill[3] = int(self.tech_level_spinbox.get())
+    self.skill[3][0] = int(self.tech_level_spinbox.get())
+    self.skill[3][1] = int(self.max_tech_level_spinbox.get())
     self.skill[-1] = kitties
     prereqs = self.skill_prereq_entry_var.get().split(", ")
     if prereqs[0] == '':
@@ -271,7 +272,14 @@ class Application(tk.Frame):
                                                       sticky=tk.N+tk.W+tk.E,
                                                       pady=5)
     self.tech_level_spinbox.delete(0, "end")
-    self.tech_level_spinbox.insert(0, self.skill[3])
+    self.tech_level_spinbox.insert(0, self.skill[3][0])
+    self.max_tech_level_spinbox.grid(row=self.skill_editor_area.grid_size()[1],
+                                                      columnspan=3,
+                                                      sticky=tk.N+tk.W+tk.E,
+                                                      pady=5)
+    self.max_tech_level_spinbox.delete(0, "end")
+    self.max_tech_level_spinbox.insert(0, self.skill[3][1])
+
     self.skill_prereq_label.grid(row=self.skill_editor_area.grid_size()[1],
                                  columnspan=3)
     self.skill_prereq_entry.grid(row=self.skill_editor_area.grid_size()[1],
@@ -399,6 +407,9 @@ class Application(tk.Frame):
                                    text="Submit",
                                    command=self._saveSkill)
     self.tech_level_spinbox = tk.Spinbox(self.skill_editor_area,
+                                         from_=0,
+                                         to_=13)
+    self.max_tech_level_spinbox = tk.Spinbox(self.skill_editor_area,
                                          from_=0,
                                          to_=13)
     self.skill_prereq_label = tk.Label(self.skill_editor_area,

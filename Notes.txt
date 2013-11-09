@@ -3,10 +3,10 @@ The following need a special method/calculation for stuff.
  - group performace (connnducting)
  - prerequisites
  - multiple same skills
-
+ - Determine a max tech level feature?
+ - Extra attack should be 25/leve per number of arms(wtfbbq!)
 The following skills can be chosen more than once
- - Guns
- 
+ skills with a * at the end of the name
  
  
  skilcats:
