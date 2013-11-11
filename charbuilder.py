@@ -39,6 +39,7 @@ class CharacterBuilder:
     self.advantages = {"advantages": [],
                        "adv_types": form_data["adv_types"]}
     self.disadvantages = {"disadvantages": [],
+                          "disadvantage_points": 0,
                           "disadv_types": form_data["disadv_types"],
                           "disadvantage_limit": self.calcDisadvantageLimit(
         form_data["points"], form_data["d_limit"])}
@@ -226,6 +227,8 @@ class CharacterBuilder:
     point_table = utils.getColumnFromTable(SKILL_COST_TABLE, "PS")
     # Then we'll get a weighted random point cost from that list
     points_to_spend = point_table[utils.randBiDistrib(point_table, 1)]
+    while points_to_spend > int(self.misc["spent_points"]) + 5:
+      points_to_spend = point_table[utils.randBiDistrib(point_table, 1)]
     # We'll need the column for where we're going to get the relative skill level
     # based on the already chosen point cost
     table_index = SKILL_COST_TABLE[0].index(skill_difficulty)
@@ -281,6 +284,7 @@ class CharacterBuilder:
       p_attrs =  ["ST", "DX", "IQ"]
       if attr not in p_attrs:
         attr = random.choice(p_attrs)
+      self.basic_attributes[attr] += 2
       self.updateAttrPoints(attr, 2)
     # Set the level of a copy of the skill and return the copy
     skill = self.setSkillLevel(skill[:])
@@ -313,18 +317,24 @@ class CharacterBuilder:
         attrs[skill[1]] += 1
       except KeyError:
         attrs[skill[1]] = 1
-    high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
-    chance = random.random()
-    if chance < 0.4001:
-      self.updateAttrPoints(high_attr, 1)
-      self.basic_attributes[high_attr] += 1
+
+    if (int(self.misc["spent_points"]) + 5) < 20:
+      choice = random.choice(["HT", "ST"])
+      self.updateAttrPoints(choice, 1)
+      self.basic_attributes[choice] += 1
     else:
-      attr_choices = ["ST", "HT", "IQ", "DX"]
-      if high_attr in attr_choices:
-        attr_choices.remove(high_attr)
-      highest_attr = random.choice(attr_choices)
-      self.updateAttrPoints(highest_attr, 1)
-      self.basic_attributes[highest_attr] += 1
+      high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
+      chance = random.random()
+      if chance < 0.4001:
+        self.updateAttrPoints(high_attr, 1)
+        self.basic_attributes[high_attr] += 1
+      else:
+        attr_choices = ["ST", "HT", "IQ", "DX"]
+        if high_attr in attr_choices:
+          attr_choices.remove(high_attr)
+        highest_attr = random.choice(attr_choices)
+        self.updateAttrPoints(highest_attr, 1)
+        self.basic_attributes[highest_attr] += 1
 
   def updateSkillLevels(self):
     """
@@ -341,7 +351,7 @@ class CharacterBuilder:
     self.basic_attributes["FP"] = self.basic_attributes["HT"]
 
   def pickAdvantage(self, advantages_list):
-    """Picks and advantage! Yaaaayy!
+    """Picks an advantage! Yaaaayy!
     
     TODO:
       Add S/M/P to skills and then randomly pick advantages with that category (weighted)
@@ -354,25 +364,69 @@ class CharacterBuilder:
       attr_type = "P"
     else: 
       attr_type = random.choice(["M", "Soc"])
-
-    if random.random() > .05:
-      pa_based_list = [i for i in advantages_list if i[1] == attr_type and i[0] not in [
-          name[0] for name in self.advantages["advantages"]]]
-      chosen_advantage = random.choice(pa_based_list)[:]
-    else:
-      while True:
-        chosen_advantage = random.choice(advantages_list)[:]
-        if chosen_advantage[0] not in [i[0] for i in self.advantages["advantages"]]:
-          break
     
-    points = parse(chosen_advantage[3])
+    point_check = True
+
+    while point_check:
+      if random.random() > .05:
+        pa_based_list = [i for i in advantages_list if i[1] == attr_type and i[0] not in [
+            name[0] for name in self.advantages["advantages"]]]
+        chosen_advantage = random.choice(pa_based_list)[:]
+      else:
+        while True:
+          chosen_advantage = random.choice(advantages_list)[:]
+          if chosen_advantage[0] not in [i[0] for i in self.advantages["advantages"]]:
+            break
+      points = parse(chosen_advantage[3])
+      if points < int(self.misc["spent_points"]) + 5:
+        point_check = False
+
     self.updatePoints(points)
     chosen_advantage[3] = points
     self.advantages["advantages"].append(chosen_advantage)
 
   def pickDisadvantage(self, disadvantages_list):
+    """
+    """
+    pa = self.getPrimaryAttribute()
+    if pa in ["HT", "ST", "DX"]:
+      attr_type = random.choice(["M", "Soc"])
+    else: 
+      attr_type = "P"
+    point_check = True
+    
+    # If we're about maxed on disadvantages and spent points, pick quirks
+    if self.misc["spent_points"] < 0:
+      points_left = (self.disadvantages["disadvantage_limit"]) - (
+          self.disadvantages["disadvantage_points"])
+      if points_left <= 5:
+        for unused_point in range(points_left):
+          self.updatePoints(-1)
+          self.disadvantages["disadvantages"].append(
+              ["Quirk", "M/P/Soc", "-", -1, "162"])
+          if self.misc["spent_points"] == 0:
+            return
+        
+    while point_check:
+      if random.random() > .05:
+        pa_based_list = [i for i in disadvantages_list if i[1] == attr_type and i[0] not in [
+            name[0] for name in self.disadvantages["disadvantages"]]]
+        chosen_disadvantage = random.choice(pa_based_list)[:]
+      else:
+        while True:
+          chosen_disadvantage = random.choice(disadvantages_list)[:]
+          if chosen_disadvantage[0] not in [i[0] for i in self.disadvantages["disadvantages"]]:
+            break
+      
+      points = parse(chosen_disadvantage[3])
+      if (self.disadvantages["disadvantage_points"] - points) <= (
+          self.disadvantages["disadvantage_limit"] - 5):
+        point_check = False
 
-    self.disadvantages["disadvantages"].append(random.choice(disadvantages_list))
+    self.disadvantages["disadvantage_points"] -= points
+    self.updatePoints(points)
+    chosen_disadvantage[3] = points
+    self.disadvantages["disadvantages"].append(chosen_disadvantage)
 
   def calcDisadvantageLimit(self, points, limit_key):
     
@@ -381,7 +435,7 @@ class CharacterBuilder:
     else:
       d_limit = int(limit_key)
     
-    return d_limit
+    return d_limit    
 
   def runCharacterBuildLoop(self, all_skills):
 
@@ -392,6 +446,7 @@ class CharacterBuilder:
         i for i in DISADVANTAGES_LIST[:] if i[2] in self.disadvantages["disadv_types"]]
 
     while self.misc["spent_points"] > 0:
+      spend_limit = int(self.misc["spent_points"]) + 5
       choice = random.random()
       skill_points = sum([n[-1] for n in self.skills["skills"]])
       if choice < 0.70001 and self.skills["skill_limit"] > skill_points:
@@ -400,14 +455,22 @@ class CharacterBuilder:
           continue
         clean_skill = self.cleanSkill(raw_skill)
         self.skills["skills"].append(clean_skill)
-      if (choice > 0.70001) and (choice < 0.85001):
+      if (choice > 0.70001) and (choice < 0.80001) and spend_limit > 10:
         #increase a stat
         if not self.skills["skills"]:
           continue
         self.increaseRandomAttribute()
-      elif choice > 0.85:
+      elif (choice > 0.80001) and (choice < 0.92001):
         self.pickAdvantage(advantage_list)
+
+      elif (self.disadvantages["disadvantage_limit"]) - (
+          self.disadvantages["disadvantage_points"]) > 5:
         self.pickDisadvantage(disadvantages_list)
+
+      while self.misc["spent_points"] < 0:
+        self.pickDisadvantage(disadvantages_list)
+      
+      
         
 
   def build(self):
