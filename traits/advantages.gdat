@@ -190,6 +190,7 @@
  ["Regeneration", "P", "X", "10, 25, 50, 100, or 150", "80"]
  ["Regrowth", "P", "X", "40", "80"]
  ["Religious Rank", "Soc", "-", "5 or 10/level", "30"]
+ ["Reputation(consult book)", "Soc", "-", "5/level", "26"]
  ["Resistant", "P", "-", "5, 10, 15, 30", "80"]
  ["Sanitized Metabolism", "P", "X", "1", "101"]
  ["Scanning Sense", "P", "X", "20", "81"]
