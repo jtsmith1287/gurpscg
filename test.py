@@ -24,22 +24,24 @@ for root, dir, files in os.walk(traits_dir):
 
 for i, line in enumerate(data["advantages"]):
   adv = eval(line)
-  if type(adv[-1]) != type([]):
-    adv.append([])
+  if type(adv[-1]) == type([]):
+    adv.pop(-2)
+  print adv
   data["advantages"][i] = repr(adv) + "\n"
 
 for i, line in enumerate(data["disadvantages"]):
   adv = eval(line)
-  if type(adv[-1]) != type([]):
-    adv.append([])
+  if type(adv[-1]) == type([]):
+    adv.pop(-2)
+  print adv
   data["disadvantages"][i] = repr(adv) + "\n"
 
 
-"""
-with open(gdats["advantages"], "w") as f:
+
+"""with open(gdats["advantages"], "w") as f:
   f.writelines(data["advantages"])
   print "saved advantages"
 with open(gdats["disadvantages"], "w") as f:
   f.writelines(data["disadvantages"])
-  print "Saved disadfdksfjkldjs stuff"
-"""
+  print "Saved disadfdksfjkldjs stuff""""
+

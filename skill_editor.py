@@ -43,7 +43,7 @@ class Application(tk.Frame):
     self.active_list = None
     self.active_scrollbar = None
     self.checkboxes = {}
-    self.skill = None
+    self.item = None
     self.item_index = None
     self.stats = tk.StringVar()
     self._run()
@@ -134,6 +134,7 @@ class Application(tk.Frame):
     self.skill_list_scrollbar.grid(row = 1,
                                    column = 3,
                                    sticky = tk.N + tk.S + tk.W)
+    self._populateSkillList()
 
   def activateAdvantagesList(self):
 
@@ -149,6 +150,7 @@ class Application(tk.Frame):
     self.advantages_list_scrollbar.grid(row = 1,
                                         column = 3,
                                         sticky = tk.N + tk.S + tk.W)
+    self._populateAdvantagesList()
 
   def activateDisadvantagesList(self):
 
@@ -164,6 +166,7 @@ class Application(tk.Frame):
     self.disadvantages_list_scrollbar.grid(row = 1,
                                    column = 3,
                                    sticky = tk.N + tk.S + tk.W)
+    self._populateDisadvantagesList()
 
   def _newCategory(self):
 
@@ -190,7 +193,7 @@ class Application(tk.Frame):
       new_cat = " ".join([i[0].upper() + i[1:].lower() for i in new_cat])
       self.item_categories.add(new_cat)
       self.cancel_newCategory()
-      self._layoutSkillEditorArea()
+      self._layoutItemEditorArea()
     else:
       tkmsg.showerror(
           "Type Somethin'", "Sorry, Boss. We can't have nil cats _runnin'round!")
@@ -201,80 +204,86 @@ class Application(tk.Frame):
 
   def selectItem(self, event = None):
 
-    # TODO: This method should work with whatever the active listbox is instead of
-    #       the static skill_list_listbox
     if event:
       raw_name = event.widget.get(event.widget.curselection()[0])
     else:
       raw_name = self.active_list.get(tk.ACTIVE)
-    item_name = raw_name.split(" ... ")[0].strip()
+    item_name = raw_name.split(" <--- ")[0].strip()
     self.listbox_position = self.active_list.get(0, tk.END).index(raw_name)
     self.item_type = None
     # Look for item in Skills
     for i in data["skills"]:
       if eval(i)[0] == item_name:
-        self.skill = eval(i)
+        self.item = eval(i)
         self.item_index = data["skills"].index(i)
-        if type(self.skill[-3]) == type([]):
-          self.skill_prereq_entry_var.set(", ".join(self.skill[-3]))
+        if type(self.item[-3]) == type([]):
+          self.skill_prereq_entry_var.set(", ".join(self.item[-3]))
         else:
           self.skill_prereq_entry_var.set("")
-        self.item_type = "skill"
+        self.item_type = "skills"
         break
     # Look for item in advantages
     for i in data["advantages"]:
       if eval(i)[0] == item_name:
+        self.item = eval(i)
         self.item_index = data["advantages"].index(i)
-        self.item_type = "advantage"
+        self.item_type = "advantages"
     # Look for item in disadvantages
     for i in data["disadvantages"]:
       if eval(i)[0] == item_name:
+        self.item = eval(i)
         self.item_index = data["disadvantages"].index(i)
-        self.item_type = "disadvantage"
-
-    if self.item_type == "skill":
+        self.item_type = "disadvantages"
+    if self.item_type:
       self.skill_editor_area.grid(row = 0,
                                   column = self.grid_size()[0],
                                   sticky = tk.W + tk.E + tk.N + tk.S)
-      self._layoutSkillEditorArea()
-    elif self.item_type == "advantage":
-      tkmsg.showerror("Yea... 'bout that", "We'll let you edit that ADVANTAGE soon")
-    elif self.item_type == "disadvantage":
-      tkmsg.showerror("Yea... 'bout that", "We'll let you edit that DISADVANTAGE soon")
+      self._layoutItemEditorArea()
     else:
-      self.skill = None
-      print "Well, that's working at least!"
+      self.item = None
+      tkmsg.showerror("O_O", "How the ... ")
 
-  def _saveSkill(self):
+  def _saveItem(self):
+
+    # Get skill specific data
+    if self.item_type == "skills":
+      tl_index = 3
+      prereqs = self.skill_prereq_entry_var.get().split(", ")
+      if prereqs[0] == '':
+        prereqs = []
+      if len(self.skill) == 6:
+        self.skill.insert(-2, prereqs)
+      elif len(self.skill) == 7:
+        self.item[-3] = prereqs
+      else:
+        print self.skill
+    # Get advantage/disadvantage specific data
+    else:
+      tl_index = 5
 
     kitties = []
     for cat, check in self.checkboxes.items():
       if check.get() == 1:
         kitties.append(cat)
-    self.skill[3][0] = int(self.tech_level_spinbox.get())
-    self.skill[3][1] = int(self.max_tech_level_spinbox.get())
-    self.skill[-1] = kitties
-    prereqs = self.skill_prereq_entry_var.get().split(", ")
-    if prereqs[0] == '':
-      prereqs = []
-    if len(self.skill) == 6:
-      self.skill.insert(-2, prereqs)
-    elif len(self.skill) == 7:
-      self.skill[-3] = prereqs
-    else:
-      print self.skill
-    data["skills"][self.item_index] = str(self.skill) + "\n"
+      self.item[-1] = kitties
+    self.item[tl_index][0] = int(self.tech_level_spinbox.get())
+    self.item[tl_index][1] = int(self.max_tech_level_spinbox.get())
+    data[self.item_type][self.item_index] = str(self.item) + "\n"
     self._cancelItem()
     self.saveData()
     self.updateData()
-    self._populateSkillList()
-    self.listboxSelect(self.skill_list_listbox, self.listbox_position + 1)
+    self.listboxSelect(self.active_list, self.listbox_position + 1)
+    if self.item_type == "skills":
+      self._populateSkillList()
+    elif self.item_type == "advantages":
+      self._populateAdvantagesList()
+    else:
+      self._populateDisadvantagesList()
+
 
   def _cancelItem(self):
 
-    # TODO: This should work with the active listbox
-
-    self.skill = None
+    self.item = None
     self.item_index = None
     self.skill_editor_area.grid_forget()
   
@@ -324,13 +333,17 @@ class Application(tk.Frame):
     else:
       tkmsg.showerror("Nil Cat!", "That search yielded nothing.")
 
-  def _layoutSkillEditorArea(self):
+  def _layoutItemEditorArea(self):
     """Internal method _configureColsRows the skill editor panel."""
   
+    # Clear previous widgets to prevent overlap and general yuck
     for widget in self.skill_editor_area.grid_slaves():
       widget.grid_forget()
-    skill_name = self.skill[0] if self.skill else "Nothing? Whu? How?"
-    label = skill_name + " -- Page(s): " + self.skill[-2]
+    item_name = self.item[0] if self.item else "Nothing? Whu? How?"
+    if self.item_type == "skills":
+      label = item_name + " -- Page(s): " + self.item[-2]
+    else:
+      label = item_name + " -- Page(s): " + self.item[-3]
     tk.Label(self.skill_editor_area,
              text = label,
              bg = self.bg).grid(row = self.skill_editor_area.grid_size()[1],
@@ -358,7 +371,7 @@ class Application(tk.Frame):
                      bg = self.bg).grid(row = row,
                                         column = col,
                                         sticky = tk.W)
-      if self.skill and category in self.skill[-1]:
+      if self.item and category in self.item[-1]:
         self.checkboxes[category].set(1)
       else:
         self.checkboxes[category].set(0)
@@ -366,13 +379,17 @@ class Application(tk.Frame):
     tk.Label(self.skill_editor_area,
              text = "Min TL",
              bg = self.bg).grid(row = current_row)
+    if self.item_type == "skills":
+      tl_index = 3
+    else:
+      tl_index = 5
     self.tech_level_spinbox.grid(row = current_row,
                                  column = 1,
                                  columnspan = 2,
                                  sticky = tk.N + tk.W + tk.E,
                                  pady = 5)
     self.tech_level_spinbox.delete(0, "end")
-    self.tech_level_spinbox.insert(0, self.skill[3][0])
+    self.tech_level_spinbox.insert(0, self.item[tl_index][0])
     current_row = self.skill_editor_area.grid_size()[1]
     tk.Label(self.skill_editor_area,
              text = "Max TL",
@@ -383,17 +400,17 @@ class Application(tk.Frame):
                                      sticky = tk.N + tk.W + tk.E,
                                      pady = 5)
     self.max_tech_level_spinbox.delete(0, "end")
-    self.max_tech_level_spinbox.insert(0, self.skill[3][1])
-
-    self.skill_prereq_label.grid(row = self.skill_editor_area.grid_size()[1],
-                                 columnspan = 3)
-    self.skill_prereq_entry.grid(row = self.skill_editor_area.grid_size()[1],
-                                 columnspan = 3,
-                                 sticky = tk.W + tk.E)
-    self.cancel_skill_button.grid(row = self.skill_editor_area.grid_size()[1],
-                                  sticky = tk.N + tk.W + tk.E,
-                                  columnspan = 3,
-                                  pady = 30)
+    self.max_tech_level_spinbox.insert(0, self.item[tl_index][1])
+    if self.item_type == "skills":
+      self.skill_prereq_label.grid(row = self.skill_editor_area.grid_size()[1],
+                                   columnspan = 3)
+      self.skill_prereq_entry.grid(row = self.skill_editor_area.grid_size()[1],
+                                   columnspan = 3,
+                                   sticky = tk.W + tk.E)
+      self.cancel_skill_button.grid(row = self.skill_editor_area.grid_size()[1],
+                                    sticky = tk.N + tk.W + tk.E,
+                                    columnspan = 3,
+                                    pady = 30)
 
   def _gridWidgets(self):
 
@@ -554,7 +571,7 @@ class Application(tk.Frame):
                                  command = self.quit)
     self.submit_skill_button = tk.Button(self.skill_editor_area,
                                    text = "Submit",
-                                   command = self._saveSkill)
+                                   command = self._saveItem)
     self.tech_level_spinbox = tk.Spinbox(self.skill_editor_area,
                                          from_ = 0,
                                          to_ = 13)
@@ -588,8 +605,8 @@ class Application(tk.Frame):
                                            command = self.cancel_newCategory)
 
   def saveData(self):
-    with open(gdats["skills"], "w") as f:
-      f.writelines(data["skills"])
+    with open(gdats[self.item_type], "w") as f:
+      f.writelines(data[self.item_type])
 
   def updateData(self):
 
@@ -626,6 +643,6 @@ class Application(tk.Frame):
 
 if __name__ == "__main__":
   app = Application("#999")
-  app.master.title("Skill Editor")
+  app.master.title("GURPS CG Trait Editor")
   app.master.geometry("1050x800+200+200")
   app.mainloop()
