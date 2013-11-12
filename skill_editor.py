@@ -165,13 +165,15 @@ class Application(tk.Frame):
     else:
       print self.skill
     data["skills"][self.skill_index] = str(self.skill) + "\n"
-    self._cancelSkill()
+    self._cancelItem()
     self.saveData()
     self.updateData()
     self._populateSkillList()
     self.listboxSelect(self.skill_list_listbox, self.listbox_position + 1)
 
-  def _cancelSkill(self):
+  def _cancelItem(self):
+
+    # TODO: This should work with the active listbox
 
     self.skill = None
     self.skill_index = None
@@ -298,9 +300,9 @@ class Application(tk.Frame):
                            column=0,
                            sticky=tk.N+tk.S+tk.W+tk.E)
     self.searchbar_area.grid(row=0,
-                             column=1,
+                             column=0,
                              pady=Y,
-                             sticky=tk.N)
+                             sticky=tk.NW)
     self.button_area.grid(row=0,
                           column=1,
                           sticky=tk.N+tk.S,
@@ -308,13 +310,14 @@ class Application(tk.Frame):
 
     # listbox widgets
     self.previous_button.grid(row=0,
-                          column=0,
+                          column=1,
                           pady=Y,
-                          sticky=tk.NW)
+                          sticky=tk.NE)
     self.searchbar_entry.grid(row=0,
-                              column=0)
+                              column=1,
+                              padx=5)
     self.searchbar_button.grid(row=0,
-                               column = 1,
+                               column = 0,
                                padx = 5)
     self.next_button.grid(row=0,
                           column=2,
@@ -352,11 +355,10 @@ class Application(tk.Frame):
 
     # Configure specific frames
     self.listbox_area.rowconfigure(1, weight=1)
-    for i in xrange(self.listbox_area.grid_size()[0]):
-      self.listbox_area.columnconfigure(i, weight=1)
+    self.listbox_area.columnconfigure(0, weight=1)
 
   def _createWidgets(self):
-    
+
     self.listbox_area = tk.Frame(self, bg=self.bg)
     self.skill_editor_area = tk.Frame(self, bg=self.bg)
     self.category_editor_area = tk.Frame(self, bg=self.bg)
@@ -421,7 +423,7 @@ class Application(tk.Frame):
                                        width=40)
     self.cancel_skill_button = tk.Button(self.skill_editor_area,
                                          text="Cancel",
-                                         command=self._cancelSkill)
+                                         command=self._cancelItem)
     tk.Label(self.category_editor_area,
              text="Enter a new category",
              bg=self.bg).grid(row=0,
@@ -468,5 +470,5 @@ class Application(tk.Frame):
 if __name__ == "__main__":
   app = Application("#999")
   app.master.title("Skill Editor")
-  app.master.geometry("900x800+200+200")
+  app.master.geometry("1050x800+200+200")
   app.mainloop()
