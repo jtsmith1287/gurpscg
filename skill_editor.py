@@ -428,7 +428,10 @@ class Application(tk.Frame):
                           sticky = tk.NE)
 
     self.activateSkillList()
-    self.tab_area.grid(row = 2)
+    self.tab_area.grid(row = 2,
+                       column = 0,
+                       sticky = tk.W,
+                       padx = 5)
     self.skill_tab.grid(row = 0,
                         column = 0,
                         sticky = tk.W,
@@ -590,7 +593,6 @@ class Application(tk.Frame):
 
   def updateData(self):
 
-    # TODO: This should populate all lists.
     self.item_categories = set([])
     self.skill_list = []
     self.advantages_list = []
