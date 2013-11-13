@@ -36,7 +36,8 @@ class CharacterBuilder:
     self.encumbrance = {}
     self.skills = {"skills": [], 
                    "skill_limit": (self.misc["total_points"] + self.calcDisadvantageLimit(
-                       form_data["points"], form_data["d_limit"])) * 0.24}
+                       form_data["points"], form_data["d_limit"])) * 0.24,
+                   "categories": form_data["categories"]}
     self.advantages = {"advantages": [],
                        "adv_types": form_data["adv_types"]}
     self.disadvantages = {"disadvantages": [],
@@ -153,28 +154,26 @@ class CharacterBuilder:
     self.secondary_attributes['extra_heavy'] = 20 * ((ST*ST)/5)
 
   def chooseSkillCategories(self):
-    """Chooses between 1 and 4 skill categories.
-    
-    Returns:
-      skill_cats: a list of skill categories.
+    """Chooses between 1 and 4 skill categories if not already chosen
+
     """
 
     # The key == how many skill categories the character will have.
-    template = {1: "Focused",
-                2: "Specialized",
-                3: "Blended",
-                4: "Well Rounded"}
-    skill_cats = []
-    for i in xrange(random.randint(1, len(template))):
-      while True:
-        cat = random.choice(list(SKILL_CATEGORIES))
-        if cat not in skill_cats:
-          skill_cats.append(cat)
-          break
-    # self.skills["focus"] = template[len(skill_cats)]
-    self.skills["focus"] = skill_cats
-    
-    return skill_cats
+
+    skill_cats = self.skills["categories"]
+    if not skill_cats:
+      template = {1: "Focused",
+                  2: "Specialized",
+                  3: "Blended",
+                  4: "Well Rounded"}
+      for i in xrange(random.randint(1, len(template))):
+        while True:
+          cat = random.choice(list(SKILL_CATEGORIES))
+          if cat not in skill_cats:
+            skill_cats.append(cat)
+            break
+      # self.skills["focus"] = template[len(skill_cats)]
+      self.skills["categories"] = skill_cats
 
   def getPrimaryAttribute(self):
     """Gets current highest attribute.
@@ -223,7 +222,7 @@ class CharacterBuilder:
 
     for skill in skills:
       if self.misc["TL"] >= skill[3][0]:
-        for cat in self.skills["skill_categories"]:
+        for cat in self.skills["categories"]:
           if cat in skill[-1] and skill not in possible_skills: # do we need this and here?
             # [-1]: references category of the skill
             possible_skills.append(skill)
@@ -304,7 +303,6 @@ class CharacterBuilder:
       elif probable_skills and chance < 2:
         skill_list = probable_skills
       else:
-        print "out of skills to pick"
         return
       skill_choice = random.choice(skill_list)[:]
       if skill_choice[0] in [ass[0] for ass in self.skills["skills"]]:
@@ -422,7 +420,7 @@ class CharacterBuilder:
     pa_based_list = [i for i in advantages_list if i[1] == attr_type and i[0] not in [
         name[0] for name in self.advantages["advantages"]]]
     cat_list = [i for i in advantages_list if any(
-                    cat in self.skills["skill_categories"] for cat in i[-1]) and (
+                    cat in self.skills["categories"] for cat in i[-1]) and (
                         i[0] not in [name[0] for name in self.advantages["advantages"]])]
     ideal_list = [i for i in pa_based_list if i in cat_list]
 
@@ -541,7 +539,7 @@ class CharacterBuilder:
     # Sets starting wealth attributes
     self.setWealth()
     # Configures all other attributes of the character
-    self.skills["skill_categories"] = self.chooseSkillCategories()
+    self.chooseSkillCategories()
     self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3][0] <= self.misc["TL"]])   
     self.updateSecondaryAttributes()
     self.updateSkillLevels()

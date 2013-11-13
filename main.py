@@ -71,6 +71,7 @@ class MainPage(webapp2.RequestHandler):
             "adv_types": self.request.get_all("adv_type"),
             "disadv_types": self.request.get_all("disadv_type"),
             "d_limit": self.request.get("d_limit"),
+            "categories": self.request.get_all("cat_type")
             }
 
   def saveParameters(self, data):
