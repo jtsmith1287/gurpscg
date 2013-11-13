@@ -43,6 +43,23 @@
             <input type="checkbox" name="disadv_type" value="X"> Exotic<br>
             <input type="checkbox" name="disadv_type" value="Sup"> Supernatural (includes magic)<br><br><br>
 
+          <b>Character Type</b><br><br>
+          <script>
+              var categories = [
+                "Animal", "Arts", "Athletic", "Business", "Combat", "Construction",
+				"Craft", "Criminal", "Design", "Entertainment", "Esoteric",
+				"Everyman", "Exploration", "Invention", "Knowledge", "Leadership",
+				"Magical", "Maintenance", "Math", "Medical", "Melee Weapon",
+				"Military", "Natural Science", "Occult", "Outdoor", "Piloting",
+				"Plant", "Police", "Psionic", "Psychology", "Ranged Weapon",
+				"Repair", "Scholarly", "Science", "Social", "Social Science",
+				"Sports", "Spy", "Street", "Technical", "Unarmed Combat",
+				"Vehicle"]
+			  
+              for (var cat in categories){
+                document.write('<input type="checkbox" name="cat_type" value=cat> cat<br>')
+                } </script>
+
           <input type="submit" value="Generate Character!">
         </div>
       </form>

@@ -29,7 +29,7 @@ HEIGHT_TABLE = [["height"],
                [(6.2,7.0)]]
 
 APPEARANCE_TABLE = [["Horrific", "Monstrous", "Hideous", "Ugly", "Unattractive", "Average", "Attractive", "Handsome", "Very handsome", "Transcendent"],
-                    ["You are indescribably monstrous or unspeakably foul, andcannot interact with normal mortals. This gives -6 on reaction rolls. The GM may decide that this trait is supernatural and unavailable to normal characters -24 points",
+                    ["You are indescribably monstrous or unspeakably foul, and cannot interact with normal mortals. This gives -6 on reaction rolls. The GM may decide that this trait is supernatural and unavailable to normal characters -24 points",
                      "You are hideous and clearly unnatural. Most people react to you as a monster rather than a sapient being. This gives -5 on reaction rolls. Again, this trait might not be appropriate for normal characters. -20 points",
                      "You have any sort of disgusting looks you can come up with: a severe skin disease, wall-eye . . . preferably several things at once. This gives -4 on reaction rolls. -16 points",
                      "You have a few disgusting looks maybe only stringy hair and snaggleteeth. This gives -2 on reaction rolls. -8 points.",
