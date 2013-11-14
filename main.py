@@ -2,6 +2,7 @@ import webapp2
 from google.appengine.ext import db
 import logging
 import charbuilder
+import traits
 import traceback
 import random
 import string
@@ -35,14 +36,35 @@ class Parameters(db.Model):
 
 class MainPage(webapp2.RequestHandler):
 
+  fields = {"cat_checkboxes": ""}
+
   def get(self):
     """
     """
-    self.response.headers['Content-Type'] = 'text/html'
+    self.response.headers['Content-Type'] = 'text/html'  # tells the page to load as html instead of plain text
     try:
-      self.response.write(HTML["main_page"])
+      self.configureCheckboxes()
+      print self.fields
+      self.response.write(HTML["main_page"] % self.fields)  # renders the main_page.html contents
     except Exception:
-      self.response.write(traceback.format_exc())
+      self.response.write(traceback.format_exc())  # if there was an error, write that instead of the main_page
+
+  def configureCheckboxes(self):
+
+    checkbox_html = "<input type=\"checkbox\" name=\"cat_type\" value=\"%s\"> %s"
+    column = 0
+    complete_html = "<table>"
+    for cat in sorted(traits.traits.SKILL_CATEGORIES):
+      if column > 4:
+        column = 0
+      if column == 0:
+        complete_html += "<tr>"  # starts a new table row
+      y = checkbox_html % (cat, cat)  # this puts whatever the current category is as the value and text to display
+      complete_html += "<td> %s </td>" % (y)  # puts the entire line as column with the td tag
+      column += 1  # go to the next column
+
+    complete_html += "</table>"  # close the table
+    self.fields["cat_checkboxes"] = complete_html
 
   def post(self):
     """

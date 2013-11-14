@@ -26,7 +26,3 @@ for line in data["disadvantages.gdat"]:
   item = eval(line)
   DISADVANTAGES_LIST.append(item)
 
-#print SKILL_CATEGORIES
-#print SKILLS
-#print ADVANTAGES_LIST
-#print DISADVANTAGES_LIST

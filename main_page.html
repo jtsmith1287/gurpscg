@@ -44,40 +44,43 @@
             <input type="checkbox" name="disadv_type" value="Sup"> Supernatural (includes magic)<br><br><br>
 
           <b>Character Types</b><br>
+          
+          %(cat_checkboxes)s
+          <!--
           <pre>
-          <script>
-			var categories = [
-                "Animal", "Arts", "Athletic", "Business", "Combat", "Construction",
-				"Craft", "Criminal", "Design", "Entertainment", "Esoteric",
-				"Everyman", "Exploration", "Invention", "Knowledge", "Leadership",
-				"Magical", "Maintenance", "Math", "Medical", "Melee Weapon",
-				"Military", "Natural Science", "Occult", "Outdoor", "Piloting",
-				"Plant", "Police", "Psionic", "Psychology", "Ranged Weapon",
-				"Repair", "Scholarly", "Science", "Social", "Social Science",
-				"Sports", "Spy", "Street", "Technical", "Unarmed Combat",
-				"Vehicle"];
-		  document.write('<br>');
-		  for (var cat=0; cat<categories.length; cat++){
-		  var ch = 15 - categories[cat].length;
-		  var chr = ' ';
-		  
-          document.write(
-              '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
-          cat++;
-          var ch = 15 - categories[cat].length;
-          document.write(
-              '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
-		  cat++;
-		  var ch = 15 - categories[cat].length;
-          document.write(
-              '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
-		  cat++;
-		  var ch = 15 - categories[cat].length;
-          document.write(
-              '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+'<br>');
-          }
-          </script><br><br>
-          </pre>
+            <script>
+              var categories = [
+                        "Animal", "Arts", "Athletic", "Business", "Combat", "Construction",
+                "Craft", "Criminal", "Design", "Entertainment", "Esoteric",
+                "Everyman", "Exploration", "Invention", "Knowledge", "Leadership",
+                "Magical", "Maintenance", "Math", "Medical", "Melee Weapon",
+                "Military", "Natural Science", "Occult", "Outdoor", "Piloting",
+                "Plant", "Police", "Psionic", "Psychology", "Ranged Weapon",
+                "Repair", "Scholarly", "Science", "Social", "Social Science",
+                "Sports", "Spy", "Street", "Technical", "Unarmed Combat",
+                "Vehicle"];
+              document.write('<br>');
+              for (var cat=0; cat<categories.length; cat++){
+              var ch = 15 - categories[cat].length;
+              var chr = ' ';
+              
+                  document.write(
+                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
+                  cat++;
+                  var ch = 15 - categories[cat].length;
+                  document.write(
+                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
+              cat++;
+              var ch = 15 - categories[cat].length;
+                  document.write(
+                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
+              cat++;
+              var ch = 15 - categories[cat].length;
+                  document.write(
+                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+'<br>');
+              }
+              </script><br><br>
+            </pre>-->
           <input type="submit" value="Generate Character!">
         </div>
       </form>

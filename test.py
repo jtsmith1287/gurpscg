@@ -43,5 +43,5 @@ for i, line in enumerate(data["disadvantages"]):
   print "saved advantages"
 with open(gdats["disadvantages"], "w") as f:
   f.writelines(data["disadvantages"])
-  print "Saved disadfdksfjkldjs stuff""""
+  print "Saved disadfdksfjkldjs stuff"""
 
