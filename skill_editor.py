@@ -103,7 +103,6 @@ class Application(tk.Frame):
       self.disadvantages_list_listbox.insert(tk.END, name)
     self._updateStatsWidget()
 
-
   def _updateStatsWidget(self):
 
     stats = "Items: %(item_count)s\nUnconfigured: %(incomplete_count)s" % (
@@ -279,7 +278,6 @@ class Application(tk.Frame):
       self._populateAdvantagesList()
     else:
       self._populateDisadvantagesList()
-
 
   def _cancelItem(self):
 
@@ -486,7 +484,6 @@ class Application(tk.Frame):
     # Configure specific frames
     self.listbox_area.rowconfigure(1, weight=1)
     self.listbox_area.columnconfigure(0, weight=1)
-
 
   def _createWidgets(self):
     
