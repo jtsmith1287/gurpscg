@@ -36,7 +36,7 @@ class CharacterBuilder:
     self.encumbrance = {}
     self.skills = {"skills": [], 
                    "skill_limit": (self.misc["total_points"] + self.calcDisadvantageLimit(
-                       form_data["points"], form_data["d_limit"])) * 0.24,
+                       form_data["points"], form_data["d_limit"])) * 0.34,
                    "categories": form_data["categories"]}
     self.advantages = {"advantages": [],
                        "adv_types": form_data["adv_types"]}
@@ -278,13 +278,12 @@ class CharacterBuilder:
 
     return skill
 
-  def cleanSkill(self, skill):
+  def cleanSkills(self):
     """Removed unwanted syntax and makes skill look more purty
     """
-    skill[3] = self.misc["TL"]
-    skill.pop(4)
-    
-    return skill
+    for skill in self.skills["skills"]:
+      skill[3] = self.misc["TL"]
+      skill.pop(4)
 
   def pickSkill(self, probable_skills, all_skills):
     """Picks a skill at random from skill_lists.
@@ -322,6 +321,57 @@ class CharacterBuilder:
 
     return skill
 
+  def auditSkillPrereqs(self):
+    """Check if there are any skills that don't meet prereqs and re-runs build loop."""
+    for skill in self.skills["skills"]:
+      if not self.checkPrereqs(skill):
+        self.skills["skills"].remove(skill)
+        return False
+    return True
+
+  def checkPrereqs(self, skill):
+    """Checks if the prerequisites for a skill are met.
+    Returns:
+      True or False
+    """
+    prereqs = skill[4]
+    current_skills = [i[0] for i in self.skills["skills"]]
+    current_advantages = [i[0] for i in self.advantages["advantages"]]
+
+    for block in prereqs:
+
+      if "or" in block:
+        or_split = block.split(" or ")
+        advantage_or_list = []
+        for item in or_split:
+          if "Advantage" in item:
+            advantage_or_list.append(item.replace(" Advantage",""))
+          elif item not in current_skills:
+            return False
+        if advantage_or_list and not any(
+            i in current_advantages for i in advantage_or_list):
+          return False
+
+      elif "Advantage" in block:
+        advantage = block.replace(" Advantage","")
+        if advantage not in current_advantages:
+          return False
+
+      elif "+" in block:
+        target_acquired = None
+        items = block.split(" ")
+        name, value = items[0], int(items[1].replace("+", ""))
+        for trait in self.skills:
+          if name in trait[0]:
+            if trait[-2] >= value:
+              target_acquired = True
+        if not target_acquired:
+          return False
+
+      elif block not in current_skills:
+        return False
+    return True
+    
   def updateAttrPoints(self, stat, mod):
     """
     """
@@ -392,7 +442,10 @@ class CharacterBuilder:
     """
     """
     for skill in self.skills["skills"]:
-      skill.insert(-1, self.basic_attributes[skill[1]] + skill[-2])
+      if len(skill) == 8:
+        skill.insert(-1, self.basic_attributes[skill[1]] + skill[-2])
+      else: #the skill has been already been updated once before
+        skill[-2] = self.basic_attributes[skill[1]] + skill[-3]
 
   def updateSecondaryAttributes(self):
     """
@@ -504,28 +557,27 @@ class CharacterBuilder:
 
     while self.misc["spent_points"] > 0:
       spend_limit = int(self.misc["spent_points"]) + 5
-      choice = random.randint(1, 20)
+      choice = random.randint(1, 100)
       skill_points = sum([n[-1] for n in self.skills["skills"]])
       # Add a skill
-      if choice < 16 and self.skills["skill_limit"] > skill_points:
+      if choice < 85 and self.skills["skill_limit"] > skill_points:
         raw_skill = self.pickSkill(skill_list, all_skills)
         if not raw_skill:
           continue
-        clean_skill = self.cleanSkill(raw_skill)
-        self.skills["skills"].append(clean_skill)
+        self.skills["skills"].append(raw_skill)
       # Increase a stat
-      elif (choice > 15) and (choice < 18) and spend_limit > 10:
+      elif (choice > 85) and (choice < 92) and spend_limit > 10:
         if not self.skills["skills"]:
           continue
         self.increaseRandomAttribute()
       # Add an advantage
-      elif choice == 18:
+      elif (choice > 91) and (choice < 95):
         self.pickAdvantage(advantage_list)
       # Decrease a stat
-      elif choice == 19:
+      elif (choice > 94) and (choice < 98):
         self.decreaseRandomAttribute()
       # Add a disadvantage
-      elif choice == 20 and self.checkDisadvantageLimit(-5):
+      elif (choice > 97) and self.checkDisadvantageLimit(-5):
         self.pickDisadvantage(disadvantages_list)
       # Add a disadvantage when out of points
       while self.misc["spent_points"] < 0:
@@ -540,9 +592,15 @@ class CharacterBuilder:
     self.setWealth()
     # Configures all other attributes of the character
     self.chooseSkillCategories()
-    self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3][0] <= self.misc["TL"]])   
-    self.updateSecondaryAttributes()
-    self.updateSkillLevels()
+    while True:
+      self.runCharacterBuildLoop([ski for ski in SKILLS if ski[3][0] <= self.misc["TL"]])   
+      self.updateSecondaryAttributes()
+      self.updateSkillLevels()
+      if self.auditSkillPrereqs():
+        break
+
+    
+    self.cleanSkills()
     self.skills["skills"] = self.formattedItems(self.skills["skills"], SKILL_HEADER)
     self.advantages["advantages"] = self.formattedItems(
         self.advantages["advantages"], ADVANTAGE_HEADER)

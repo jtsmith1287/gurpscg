@@ -251,12 +251,12 @@ class Application(tk.Frame):
       prereqs = self.skill_prereq_entry_var.get().split(", ")
       if prereqs[0] == '':
         prereqs = []
-      if len(self.skill) == 6:
-        self.skill.insert(-2, prereqs)
-      elif len(self.skill) == 7:
+      if len(self.item) == 6:
+        self.item.insert(-2, prereqs)
+      elif len(self.item) == 7:
         self.item[-3] = prereqs
       else:
-        print self.skill
+        print self.item
     # Get advantage/disadvantage specific data
     else:
       tl_index = 5
@@ -624,6 +624,8 @@ class Application(tk.Frame):
     for line in data["advantages"]:
       advantage = eval(line)
       self.advantages_list.append(advantage)
+      for cat in advantage[-1]:
+        self.item_categories.add(cat)
     # Eval disadvantages
     for line in data["disadvantages"]:
       disadvantage = eval(line)

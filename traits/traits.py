@@ -22,6 +22,8 @@ for line in data["skills.gdat"]:
 for line in data["advantages.gdat"]:
   item = eval(line)
   ADVANTAGES_LIST.append(item)
+  for cat in item[-1]:
+    SKILL_CATEGORIES.add(cat)
 for line in data["disadvantages.gdat"]:
   item = eval(line)
   DISADVANTAGES_LIST.append(item)

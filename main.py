@@ -51,7 +51,7 @@ class MainPage(webapp2.RequestHandler):
 
   def configureCheckboxes(self):
 
-    checkbox_html = "<input type=\"checkbox\" name=\"cat_type\" value=\"%s\"> %s"
+    checkbox_html = '<input type="checkbox" name="cat_type" value="%s"> %s'
     column = 0
     complete_html = "<table>"
     for cat in sorted(traits.traits.SKILL_CATEGORIES):
