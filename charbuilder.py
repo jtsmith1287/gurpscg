@@ -292,7 +292,7 @@ class CharacterBuilder:
         target_acquired = None
         items = block.split(" ")
         name, value = items[:-1], int(items[-1].replace("+", ""))
-        for trait in self.skills:
+        for trait in self.skills["skills"]:
           if name in trait[0]:
             if trait[-2] >= value:
               target_acquired = True
