@@ -36,7 +36,7 @@ class CharacterBuilder:
     self.encumbrance = {}
     self.skills = {"skills": [], 
                    "skill_limit": (self.misc["total_points"] + self.calcDisadvantageLimit(
-                       form_data["points"], form_data["d_limit"])) * 0.34,
+                       form_data["points"], form_data["d_limit"])) * 0.24,
                    "categories": form_data["categories"]}
     self.advantages = {"advantages": [],
                        "adv_types": form_data["adv_types"]}
@@ -618,7 +618,6 @@ class CharacterBuilder:
     self.disadvantages["disadvantages"] = self.formattedItems(
         self.disadvantages["disadvantages"], DISADVANTAGE_HEADER)
     self.calculateMisc()
-
 
 if __name__ == "__main__":
 

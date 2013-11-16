@@ -133,7 +133,7 @@
 ['Lightning Calculator', 'M', '-', '2', '66', [0, 13], []]
 ['Longevity', 'P', '-', '2', '66', [0, 13], []]
 ['Luck', 'M', '-', '15, 30 or 60', '66', [0, 13], []]
-['Magery', 'M', 'Sup', '5/level', '66', [0, 13], ['Magical']]
+['Magery', 'M', 'Sup', '5 + 10/level', '66', [0, 13], ['Magical']]
 ['Magic Resistance', 'M', 'Sup', '2/level', '67', [0, 13], []]
 ['Mana Damper', 'M', 'Sup', '10/level', '67', [0, 13], []]
 ['Mana Enhancer', 'M', 'Sup', '50/level', '68', [0, 13], []]
