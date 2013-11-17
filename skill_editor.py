@@ -3,7 +3,6 @@ Created on Oct 25, 2013
 
 @author: Justin
 '''
-
 import Tkinter as tk
 import tkMessageBox as tkmsg
 import re
@@ -43,6 +42,8 @@ class Application(tk.Frame):
     self.active_list = None
     self.active_scrollbar = None
     self.checkboxes = {}
+    self.checked_boxes = []
+    self.just_checked = None
     self.item = None
     self.item_index = None
     self.stats = tk.StringVar()
@@ -262,7 +263,7 @@ class Application(tk.Frame):
 
     kitties = []
     for cat, check in self.checkboxes.items():
-      if check.get() == 1:
+      if check["var"].get() == 1:
         kitties.append(cat)
       self.item[-1] = kitties
     self.item[tl_index][0] = int(self.tech_level_spinbox.get())
@@ -331,6 +332,29 @@ class Application(tk.Frame):
     else:
       tkmsg.showerror("Nil Cat!", "That search yielded nothing.")
 
+  def doubleCheck(self):
+
+    last_checked = None
+    for cat, data in self.checkboxes.items():
+      intvar = data["var"]
+      box = data["checkbox"]
+      i = intvar.get()
+      if cat not in self.checked_boxes:
+        if i:
+          self.checked_boxes.append(cat)
+          last_checked = (box, intvar, cat)
+      if cat in self.checked_boxes:
+        if not i:
+          last_checked = (box, intvar, cat)
+
+    box, intvar, cat = last_checked
+    if not intvar.get() and box["bg"] == self.bg:
+      box["bg"] = "yellow"
+      box.select()
+    elif box["bg"] == "yellow":
+      box["bg"] = self.bg
+      self.checked_boxes.remove(cat)
+
   def _layoutItemEditorArea(self):
     """Internal method _configureColsRows the skill editor panel."""
   
@@ -356,23 +380,28 @@ class Application(tk.Frame):
              bg = self.bg).grid(row = self.skill_editor_area.grid_size()[1],
                                 column = 0,
                                 columnspan = 3)
-    self.checkboxes = {}
     row = self.skill_editor_area.grid_size()[1] - 1
     for idx, category in enumerate(sorted(self.item_categories)):
+      bgyeller = False
+      if category not in self.checkboxes.keys():
+        self.checkboxes[category] = {}
+        self.checkboxes[category]["var"] = tk.IntVar()
+        self.checkboxes[category]["checkbox"] = tk.Checkbutton(self.skill_editor_area,
+                                                                text = category,
+                                                                variable = self.checkboxes[category]["var"],
+                                                                command = self.doubleCheck,
+                                                                bg = self.bg)
       col = idx % 3
       if col == 0:
         row += 1
-      self.checkboxes[category] = tk.IntVar()
-      tk.Checkbutton(self.skill_editor_area,
-                     text = category,
-                     variable = self.checkboxes[category],
-                     bg = self.bg).grid(row = row,
-                                        column = col,
-                                        sticky = tk.W)
+      self.checkboxes[category]["checkbox"].grid(row = row,
+                                                 column = col,
+                                                 sticky = tk.W)
       if self.item and category in self.item[-1]:
-        self.checkboxes[category].set(1)
-      else:
-        self.checkboxes[category].set(0)
+        # right here for yeller stuff, dawg
+        self.checkboxes[category]["var"].set(1)
+        self.checked_boxes.append(category)
+
     current_row = self.skill_editor_area.grid_size()[1]
     tk.Label(self.skill_editor_area,
              text = "Min TL",
