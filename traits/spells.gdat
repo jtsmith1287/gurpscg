@@ -25,7 +25,7 @@
 ["Deflect", "Ench.", "H", "Ench.", "Special", "-", "Special", "-", "480", "Enchant"]
 ["Destroy Water", "Area", "H", "Water", "1 sec.", "P", "3B", "-", "253", "Create Water"]
 ["Detect Magic", "Reg.", "H", "Know.", "5 sec.", "-", "2", "-", "249", "Magery 1"]
-["Dispel Magic", "Area [Special]", "H", "Meta", "Special", "P", "3B", "-", "250", "Counterspell, 12 other spells"]
+["Dispel Magic", "Area [Special]", "H", "Meta", "Special", "P", "3B", "-", "250", "Counterspell, 12 other"]
 ["Earth to Air", "Reg.", "H", "Air, Earth", "2 sec.", "P", "Special", "-", "243", "Create Air, Shape Earth"]
 ["Earth to Stone", "Reg.", "H", "Earth", "1 sec.", "P", "3/cy (min. 3)", "-", "245", "Magery 1, Shape Earth"]
 ["Enchant", "Ench.", "VH", "Ench.", "Special", "-", "Special", "-", "480", "Magery 2, 10 colleges"]
