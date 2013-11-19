@@ -629,9 +629,9 @@ class CharacterBuilder:
       potential_spell = random.choice(spell_list)
       prereqs = potential_spell[-1]
       elements = prereqs.split(", ")
-      # This should neve happen, but just in case
+      # This should never happen, but just in case
       if potential_spell[0] in [i[0] for i in self.spells["spells"]]:
-        Print("FAIL %s" % potential_spell[0])
+        Print("FAILBAD %s" % potential_spell[0])
         check = False
         continue
       for prereq in elements:
@@ -642,7 +642,6 @@ class CharacterBuilder:
             if "Magery" in ad[0]:
               if ad[3] < level_points:
                 check = False; break
-            else: check = False; break
         
         # This prerequisite is an existing spell
         elif prereq in [i[0] for i in spell_list]:
@@ -658,7 +657,8 @@ class CharacterBuilder:
           for spell in self.spells["spells"]:
             if college in spell[3]:
               counter += 1
-          if counter < quantity:
+              Print(college)
+          if counter < int(quantity):
             check = False; break
 
         # This prerequisite requires spells from x colleges...ugh really? sigh
@@ -668,7 +668,7 @@ class CharacterBuilder:
           colleges = set([])
           for spell in self.spells["spells"]:
             colleges.add(spell[3])
-          if len(colleges) < amount:
+          if len(colleges) < int(amount):
             check = False; break
 
         # This prerequisite requires an IQ at a certain level
@@ -689,8 +689,13 @@ class CharacterBuilder:
               for spell in self.spells["spells"]:
                 if "Earth" in spell[3]:
                   counter += 1
-                  if counter < 4: check = False; break
-                else: check = False; break
+              if counter < 4: check = False; break
+              
+        # For a spell requiring x amount of spells in total
+        elif "other" in prereq:
+          number = int(prereq.split(" ")[0])
+          if number > len(self.spells["spells"]):
+            check = False; break
       if check:
         limiter += 50
         spell_choice = self.setSkillLevel(potential_spell[:])
