@@ -7,7 +7,7 @@ Created on Jul 31, 2013
 
 import operator
 import random
-
+import logging
 from stuff.utilities import utils
 from stuff.tables import *
 from stuff.headers import *
@@ -16,6 +16,9 @@ from traits.traits import *
 
 parser = Parse()
 parse = parser.parse
+
+def Print(message):
+  logging.info(message)
 
 class CharacterBuilder:
   """Forms everything about the character."""
@@ -45,7 +48,7 @@ class CharacterBuilder:
                           "disadv_types": form_data["disadv_types"],
                           "disadvantage_limit": self.calcDisadvantageLimit(
         form_data["points"], form_data["d_limit"])}
-
+    self.spells = {"spells": []}
     self.build()
 
   def formattedItems(self, item_list, header=None):
@@ -244,8 +247,9 @@ class CharacterBuilder:
     """
     
     for advantage in ads:
-      advantage.pop(-1)
-      advantage.pop(-1)
+      if len(advantage) > 5:
+        advantage.pop(-1)
+        advantage.pop(-1)
 
   def auditSkillPrereqs(self):
     """Checks for skills that have unfulfilled prerequisites and removes them.
@@ -291,7 +295,7 @@ class CharacterBuilder:
       elif "+" in block:
         target_acquired = None
         items = block.split(" ")
-        name, value = items[:-1], int(items[-1].replace("+", ""))
+        name, value = ' '.join(items[:-1]), int(items[-1].replace("+", ""))
         for trait in self.skills["skills"]:
           if name in trait[0]:
             if trait[-2] >= value:
@@ -310,6 +314,15 @@ class CharacterBuilder:
         skill.insert(-1, self.basic_attributes[skill[1]] + skill[-2])
       else: #the skill has been already been updated once before
         skill[-2] = self.basic_attributes[skill[1]] + skill[-3]
+    
+    if self.spells["spells"]:
+      for i in [x for x in self.advantages["advantages"] if "Magery" in x[0]]:
+        magery_level = (int(i[3]) -5)/10
+      for spell in self.spells["spells"]:
+        if len(spell) == 11:
+          spell.insert(-1, self.basic_attributes["IQ"]+spell[-2]+magery_level)
+        else:
+          spell[-2] = self.basic_attributes["IQ"]+spell[-3]+magery_level
 
   def cleanSkills(self):
     """Removed unwanted syntax and makes skill look more purty.
@@ -327,7 +340,7 @@ class CharacterBuilder:
                   2: "Specialized",
                   3: "Blended",
                   4: "Well Rounded"}
-      for i in xrange(random.randint(1, len(template))):
+      for unused in xrange(random.randint(1, len(template))):
         while True:
           cat = random.choice(list(SKILL_CATEGORIES))
           if cat not in skill_cats:
@@ -335,6 +348,45 @@ class CharacterBuilder:
             break
       # self.skills["focus"] = template[len(skill_cats)]
       self.skills["categories"] = skill_cats
+
+  def generateMustHaveLists(self, items):
+    """Generates a list items that must be in the character per category choices.
+    Args:
+      items: A table of items to parse for things that must be in the character
+    Returns:
+      must_haves: a list of the items that just must be had
+    """
+    must_haves = []
+    for item in items:
+      meow = [cat for cat in item[-1] if "---" in cat]
+      if meow:
+        if cat.strip("---") in self.skills["categories"]:
+          must_haves.append(item[:])
+
+    return must_haves
+
+  def getMustHaves(self):
+    """Hunts down any skills or advantages required for categories checked.
+    Returns:
+      must_have_skills: list of skills the character must have based on category choices
+      must_have_advantages: the poop smith's job is obvious
+    """
+    must_have_skills = self.generateMustHaveLists(SKILLS)
+    must_have_advantages = self.generateMustHaveLists(ADVANTAGES_LIST)
+
+    # Acquire all must-have skills
+    if must_have_skills:
+      for skill in must_have_skills:
+        raw_skill = self.pickSkill(skill)
+        self.skills["skills"].append(raw_skill)
+
+    # Poop smith
+    if must_have_advantages:
+      for advantage in must_have_advantages:
+        points = parse(advantage[3])
+        self.updatePoints(points)
+        advantage[3] = points
+        self.advantages["advantages"].append(advantage)
 
   def getPossibleSkills(self):
     """Creates a list of likely skills based on characters selected categories and TL.
@@ -398,12 +450,13 @@ class CharacterBuilder:
 
     return skill
 
-  def pickSkill(self):
+  def pickSkill(self, skill=[]):
     """Picks a skill at random from skill_lists.
+    Args:
+      skill=[]: a list that is a skill that must be picked and bypasses some logic
     Returns:
       skill: a list that is the chosen skill
     """
-    skill = []
     probable_skills = self.getPossibleSkills()
     good_candidates = self.getGoodCandidateSkills(probable_skills)
     chance = random.randint(1, 10)
@@ -483,7 +536,7 @@ class CharacterBuilder:
     """Picks an advantage! Yaaaayy!
     Args:
       advantages_list: a list of advantages filtered by choice for X/Sup
-    """
+    """      
     pa = self.getPrimaryAttribute()
     if pa in ["HT", "ST", "DX"]:
       attr_type = "P"
@@ -526,7 +579,6 @@ class CharacterBuilder:
       attr_type = random.choice(["M", "Soc"])
     else: 
       attr_type = "P"
-    point_check = True
     
     # If we're about maxed on disadvantages and spent points, pick quirks instead
     if self.misc["spent_points"] < 0:
@@ -560,6 +612,90 @@ class CharacterBuilder:
     chosen_disadvantage[3] = points
     self.disadvantages["disadvantages"].append(chosen_disadvantage)
 
+  def pickSpell(self):
+    """
+    """
+    if not self.spells["spells"]:
+      spell_list = [i[:] for i in SPELL_LIST[:]]
+    else:
+      spell_list = [i[:] for i in SPELL_LIST if (
+                       i[0] not in [x[0] for x in self.spells["spells"]])]
+    if not spell_list: return
+    spell_choice = []
+    limiter = 0 # To prevent infinite loop which happens with high points and low magery
+    while limiter < 50:
+      limiter += 1
+      check = True
+      potential_spell = random.choice(spell_list)
+      prereqs = potential_spell[-1]
+      elements = prereqs.split(", ")
+      # This should neve happen, but just in case
+      if potential_spell[0] in [i[0] for i in self.spells["spells"]]:
+        Print("FAIL %s" % potential_spell[0])
+        check = False
+        continue
+      for prereq in elements:
+        # This prerequisite is for Magery level
+        if "Magery" in prereq:
+          level_points = (int(prereq.split(" ")[-1]) * 10) + 5
+          for ad in self.advantages["advantages"]:
+            if "Magery" in ad[0]:
+              if ad[3] < level_points:
+                check = False; break
+            else: check = False; break
+        
+        # This prerequisite is an existing spell
+        elif prereq in [i[0] for i in spell_list]:
+          if not self.spells["spells"]: check = False; break
+          if prereq not in [i[0] for i in self.spells["spells"]]:
+            check = False; break
+          
+        # This prerequisite requires x amount of spells in a college
+        elif "++" in prereq:
+          if not self.spells["spells"]: check = False; break
+          quantity, college = prereq.replace("++","").split(" ")
+          counter = 0
+          for spell in self.spells["spells"]:
+            if college in spell[3]:
+              counter += 1
+          if counter < quantity:
+            check = False; break
+
+        # This prerequisite requires spells from x colleges...ugh really? sigh
+        elif "colleges" in prereq:
+          if not self.spells["spells"]: check = False; break
+          amount = prereq.split(" ")[0]
+          colleges = set([])
+          for spell in self.spells["spells"]:
+            colleges.add(spell[3])
+          if len(colleges) < amount:
+            check = False; break
+
+        # This prerequisite requires an IQ at a certain level
+        elif "IQ" in prereq:
+          needed_amount = prereq.split(" ")[-1]
+          if self.basic_attributes["IQ"] < int(needed_amount):
+            check = False; break
+
+        # There are only two spells that have an 'or' so this check is mostly situational
+        elif " or " in prereq:
+          if not self.spells["spells"]: check = False; break
+          option_one, option_two = prereq.split(" or ")
+          if option_one not in [i[0] for i in self.spells["spells"]]:
+            option_one = False
+          if not option_one:
+            if option_two not in [i[0] for i in self.spells["spells"]]:
+              counter = 0
+              for spell in self.spells["spells"]:
+                if "Earth" in spell[3]:
+                  counter += 1
+                  if counter < 4: check = False; break
+                else: check = False; break
+      if check:
+        limiter += 50
+        spell_choice = self.setSkillLevel(potential_spell[:])
+        self.spells["spells"].append(spell_choice)
+
   def runCharacterBuildLoop(self):
     """Runs the loop that picks skills/(dis)advantages and in/decreases attributes."""
     advantage_list = [
@@ -568,17 +704,23 @@ class CharacterBuilder:
         i for i in DISADVANTAGES_LIST[:] if i[2] in self.disadvantages["disadv_types"]]
 
     while self.misc["spent_points"] > 0:
+      
       spend_limit = int(self.misc["spent_points"]) + 5
-      choice = random.randint(1, 100)
-      skill_points = sum([n[-1] for n in self.skills["skills"]])
+      if [i for i in self.advantages["advantages"] if "Magery" in i[0]]:
+        choice = random.randint(1, 130)
+      else:
+        choice = random.randint(1, 100)
+      if choice > 100:
+        self.pickSpell()
       # Add a skill
-      if choice < 85 and self.skills["skill_limit"] > skill_points:
+      skill_points = sum([n[-1] for n in self.skills["skills"]])
+      if choice < 83 and self.skills["skill_limit"] > skill_points:
         raw_skill = self.pickSkill()
         if not raw_skill:
           continue
         self.skills["skills"].append(raw_skill)
       # Increase a stat
-      elif (choice > 85) and (choice < 92) and spend_limit > 10:
+      elif (choice > 82) and (choice < 92) and spend_limit > 10:
         if not self.skills["skills"]:
           continue
         self.increaseRandomAttribute()
@@ -589,7 +731,7 @@ class CharacterBuilder:
       elif (choice > 94) and (choice < 98):
         self.decreaseRandomAttribute()
       # Add a disadvantage
-      elif (choice > 97) and self.checkDisadvantageLimit(-5):
+      elif (choice > 97) and (choice < 101) and self.checkDisadvantageLimit(-5):
         self.pickDisadvantage(disadvantages_list)
       # Add a disadvantage when out of points
       while self.misc["spent_points"] < 0:
@@ -597,6 +739,7 @@ class CharacterBuilder:
 
   def build(self):
     """Assembles all of the above madness into a character."""
+    self.getMustHaves()
     # Sets height, weight, appearance and physical build
     self.setAppearance()
     # Sets starting wealth attributes
@@ -612,12 +755,14 @@ class CharacterBuilder:
     self.cleanAds(self.advantages["advantages"])
     self.cleanAds(self.disadvantages["disadvantages"])
     self.cleanSkills()
+    self.spells["spells"] = self.formattedItems(self.spells["spells"], SPELL_HEADER)
     self.skills["skills"] = self.formattedItems(self.skills["skills"], SKILL_HEADER)
     self.advantages["advantages"] = self.formattedItems(
         self.advantages["advantages"], ADVANTAGE_HEADER)
     self.disadvantages["disadvantages"] = self.formattedItems(
         self.disadvantages["disadvantages"], DISADVANTAGE_HEADER)
     self.calculateMisc()
+    
 
 if __name__ == "__main__":
 

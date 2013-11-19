@@ -264,6 +264,11 @@ class Application(tk.Frame):
     kitties = []
     for cat, check in self.checkboxes.items():
       if check["var"].get() == 1:
+        if check["checkbox"]["bg"] == "yellow":
+          if "---" not in cat:
+            cat = "%s---" % cat
+        elif "---" in cat:
+          cat.replace("---", "")
         kitties.append(cat)
       self.item[-1] = kitties
     self.item[tl_index][0] = int(self.tech_level_spinbox.get())
@@ -397,11 +402,16 @@ class Application(tk.Frame):
       self.checkboxes[category]["checkbox"].grid(row = row,
                                                  column = col,
                                                  sticky = tk.W)
-      if self.item and category in self.item[-1]:
-        # right here for yeller stuff, dawg
-        self.checkboxes[category]["var"].set(1)
-        self.checked_boxes.append(category)
-
+      if self.item:
+        this_item = [i for i in self.item[-1] if category in i]
+        if this_item:
+          self.checkboxes[category]["var"].set(1)
+          if "---" in this_item[0]:
+            self.checkboxes[category]["checkbox"]["bg"] = "yellow"
+            self.checkboxes[category]["checkbox"]["text"] = category.replace("---","")
+          self.checked_boxes.append(category)
+        else:
+          self.checkboxes[category]["var"].set(0)
     current_row = self.skill_editor_area.grid_size()[1]
     tk.Label(self.skill_editor_area,
              text = "Min TL",
@@ -645,13 +655,13 @@ class Application(tk.Frame):
       skill = eval(line)
       self.skill_list.append(skill)
       for cat in skill[-1]:
-        self.item_categories.add(cat)
+        self.item_categories.add(cat.strip("---"))
     # Eval advantages
     for line in data["advantages"]:
       advantage = eval(line)
       self.advantages_list.append(advantage)
       for cat in advantage[-1]:
-        self.item_categories.add(cat)
+        self.item_categories.add(cat.strip("---"))
     # Eval disadvantages
     for line in data["disadvantages"]:
       disadvantage = eval(line)
