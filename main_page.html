@@ -43,44 +43,17 @@
             <input type="checkbox" name="disadv_type" value="X"> Exotic<br>
             <input type="checkbox" name="disadv_type" value="Sup"> Supernatural (includes magic)<br><br><br>
 
+		  <font size="2">
+		  <table><tr><td><b>Primary Attribute -- </b></td><td><b>Secondary Attribute -- </b></td><td><b>Tertiary Attribute</b></td>
+            <tr><td><input type="radio" name="pa" value="ST"> ST</td><td><input type="radio" name="sa" value="ST"> ST</td><td><input type="radio" name="ta" value="ST"> ST</td>
+            <tr><td><input type="radio" name="pa" value="DX"> DX</td><td><input type="radio" name="sa" value="DX"> DX</td><td><input type="radio" name="ta" value="DX"> DX</td>
+            <tr><td><input type="radio" name="pa" value="IQ"> IQ</td><td><input type="radio" name="sa" value="IQ"> IQ</td><td><input type="radio" name="ta" value="IQ"> IQ</td>
+			<tr><td><input type="radio" name="pa" value="HT"> HT</td><td><input type="radio" name="sa" value="HT"> HT</td><td><input type="radio" name="ta" value="HT"> HT</td>
+			</table>
           <b>Character Types</b><br>
           
           %(cat_checkboxes)s
-          <!--
-          <pre>
-            <script>
-              var categories = [
-                        "Animal", "Arts", "Athletic", "Business", "Combat", "Construction",
-                "Craft", "Criminal", "Design", "Entertainment", "Esoteric",
-                "Everyman", "Exploration", "Invention", "Knowledge", "Leadership",
-                "Magical", "Maintenance", "Math", "Medical", "Melee Weapon",
-                "Military", "Natural Science", "Occult", "Outdoor", "Piloting",
-                "Plant", "Police", "Psionic", "Psychology", "Ranged Weapon",
-                "Repair", "Scholarly", "Science", "Social", "Social Science",
-                "Sports", "Spy", "Street", "Technical", "Unarmed Combat",
-                "Vehicle"];
-              document.write('<br>');
-              for (var cat=0; cat<categories.length; cat++){
-              var ch = 15 - categories[cat].length;
-              var chr = ' ';
-              
-                  document.write(
-                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
-                  cat++;
-                  var ch = 15 - categories[cat].length;
-                  document.write(
-                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
-              cat++;
-              var ch = 15 - categories[cat].length;
-                  document.write(
-                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+Array(ch + 1).join(chr));
-              cat++;
-              var ch = 15 - categories[cat].length;
-                  document.write(
-                      '<input type="checkbox" name="cat_type" value='+categories[cat]+'> '+categories[cat]+'<br>');
-              }
-              </script><br><br>
-            </pre>-->
+          </font>
           <input type="submit" value="Generate Character!">
         </div>
       </form>

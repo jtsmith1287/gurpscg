@@ -17,8 +17,8 @@ from traits.traits import *
 parser = Parse()
 parse = parser.parse
 
-def Print(message):
-  logging.info(message)
+def Print(*args):
+  logging.info(*args)
 
 class CharacterBuilder:
   """Forms everything about the character."""
@@ -49,6 +49,9 @@ class CharacterBuilder:
                           "disadvantage_limit": self.calcDisadvantageLimit(
         form_data["points"], form_data["d_limit"])}
     self.spells = {"spells": []}
+    self.primary_attributes = {"pa":form_data["pa"],
+                               "sa":form_data["sa"],
+                               "ta":form_data["ta"]}
     self.build()
 
   def formattedItems(self, item_list, header=None):
@@ -185,23 +188,46 @@ class CharacterBuilder:
     """
     self.misc["spent_points"] -= points; return True
 
-  def getPrimaryAttribute(self):
-    """Gets current highest attribute.
-
-    Returns:
-      max_attr: a string of random highest basic_attribute
+  def determinePrimaryAttribute(self, proposed):
     """
-    
-    primary_stats = ["ST", "DX", "IQ", "HT"]
-    iter_list = (v for k,v in self.basic_attributes.items() if k in primary_stats)
-    biggest = max(iter_list)
-    max_attrs = []
-    for stat,value in self.basic_attributes.items():
-      if value >= biggest and stat in primary_stats:
-        max_attrs.append(stat)
-    max_attr = random.choice(max_attrs)
+    """
+    p_attrs =  ["ST", "DX", "IQ"]
 
-    return max_attr
+    # Nothing specified so pick primary and possibly a secondary at random
+    if not any (i for i in self.primary_attributes.values()):
+      if proposed not in p_attrs:
+        proposed = random.choice(p_attrs)
+      self.primary_attributes["pa"] = proposed
+      p_attrs.append("HT")
+      chance = random.randint(1, 2)
+      if chance == 1:
+        self.primary_attributes["sa"] = random.choice([
+            i for i in p_attrs if proposed not in i])
+        self.basic_attributes[self.primary_attributes["pa"]] += 1
+        self.updateAttrPoints(self.primary_attributes["pa"], 1)
+        self.basic_attributes[self.primary_attributes["sa"]] += 1
+        self.updateAttrPoints(self.primary_attributes["sa"], 1)
+      else:
+        self.basic_attributes[self.primary_attributes["pa"]] += 2
+        self.updateAttrPoints(self.primary_attributes["pa"], 2)
+    # Just primary attribute was selected
+    elif not self.primary_attributes["sa"] and not self.primary_attributes["ta"]:
+      self.basic_attributes[self.primary_attributes["pa"]] += 2
+      self.updateAttrPoints(self.primary_attributes["pa"], 2)
+    # Secondary or Tertiary were selected
+    else:
+      if not self.primary_attributes["pa"]:
+        if proposed not in p_attrs:
+          proposed = random.choice(p_attrs)
+        self.primary_attributes["pa"] = proposed
+      self.basic_attributes[self.primary_attributes["pa"]] += 1
+      self.updateAttrPoints(self.primary_attributes["pa"], 1)
+      if self.primary_attributes["ta"]:
+        self.basic_attributes[self.primary_attributes["ta"]] += 1
+        self.updateAttrPoints(self.primary_attributes["ta"], 1)
+      if self.primary_attributes["sa"]:
+        self.basic_attributes[self.primary_attributes["sa"]] += 1
+        self.updateAttrPoints(self.primary_attributes["sa"], 1)
 
   def updateDisadvantagePoints(self, points):
     """This updates the points spent on disadvantages.
@@ -412,7 +438,10 @@ class CharacterBuilder:
       good_candidates: list of skill from possible skill filtered by primary attribute
     """
     good_candidates = []
-    p_attr = self.getPrimaryAttribute()
+    if not self.primary_attributes["pa"]:
+      p_attr = random.choice(["ST", "DX", "IQ"])
+    else:
+      p_attr = self.primary_attributes["pa"]
     for skill in possible_skills:
       if p_attr in skill[1] and skill not in good_candidates: # do we need this and here?
         # [1]: references attribute of skill
@@ -463,7 +492,7 @@ class CharacterBuilder:
     while not skill:
       if good_candidates and chance > 2:
         skill_list = good_candidates
-      elif probable_skills and chance < 2:
+      elif probable_skills and chance < 3:
         skill_list = probable_skills
       else:
         return
@@ -474,55 +503,69 @@ class CharacterBuilder:
         skill = skill_choice
     # If this is the first skill then we want to increase the primary attr
     if not self.skills["skills"]:
-      attr = skill[1]
-      p_attrs =  ["ST", "DX", "IQ"]
-      if attr not in p_attrs:
-        attr = random.choice(p_attrs)
-      self.basic_attributes[attr] += 2
-      self.updateAttrPoints(attr, 2)
+      self.determinePrimaryAttribute(skill[1])
+      
+      
     # Set the level of a copy of the skill and return the copy
     skill = self.setSkillLevel(skill[:])
 
     return skill
 
   def increaseRandomAttribute(self):
-    """Picks an attribute to increase by one, weighted towards the highest attribute."""
+    """Picks an attribute to increase by one, weighted to the common skill attribute."""
+    
+    secondary = self.primary_attributes["sa"]
+    tertiary = self.primary_attributes["ta"]
     attrs = {}
-    # Find most common stat shared by skills
-    for skill in self.skills["skills"]:
-      try:
-        attrs[skill[1]] += 1
-      except KeyError:
-        attrs[skill[1]] = 1
-
+    choice = None
+    chance = random.random()
     if (int(self.misc["spent_points"]) + 5) < 20:
+      if chance > .8: return # Prevent this from happening a bunch
       choice = random.choice(["HT", "ST"])
       self.updateAttrPoints(choice, 1)
       self.basic_attributes[choice] += 1
-    else:
+      return
+    if chance < 0.5001:
+      for skill in self.skills["skills"]:
+        try:
+          attrs[skill[1]] += 1
+        except KeyError:
+          attrs[skill[1]] = 1
       high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
-      chance = random.random()
-      if chance < 0.4001:
-        self.updateAttrPoints(high_attr, 1)
-        self.basic_attributes[high_attr] += 1
-      else:
-        attr_choices = ["ST", "HT", "IQ", "DX"]
-        if high_attr in attr_choices:
-          attr_choices.remove(high_attr)
-        highest_attr = random.choice(attr_choices)
-        self.updateAttrPoints(highest_attr, 1)
-        self.basic_attributes[highest_attr] += 1
+      choice = high_attr
+    elif tertiary and secondary:
+      this_choice = random.random()
+      if this_choice > .4:
+        choice = secondary
+      else: choice = tertiary
+    elif secondary:
+      if chance > .6:
+        choice = secondary
+    elif tertiary:
+      if chance > .6:
+        choice = secondary
+    if not choice: 
+      choice = random.choice(["ST", "HT", "IQ", "DX"])
+
+    self.updateAttrPoints(choice, 1)
+    self.basic_attributes[choice] += 1
 
   def decreaseRandomAttribute(self):
     """Picks one of the lowest attributes and reduces it by 1."""
     primary_stats = ["ST", "DX", "IQ", "HT"]
+    for stat in self.primary_attributes.values():
+      if stat in primary_stats:
+        primary_stats.remove(stat)
+    if len(primary_stats) == 1:
+      if random.random() > .4: return # prevents dumpstat of 7 if only one can be lowered
     stats = {}
     for k,v in self.basic_attributes.items():
       if k in primary_stats:
         stats[k] = v
     low = [k for k, v in stats.items() if not any(y < v for y in stats.values())]
     if len(low) == 1:
-      stats.pop(low[0])
+      if len(stats) > 1:
+        stats.pop(low[0])
       low.append(min(stats, key=stats.get))
       choice = random.choice(low)
     else:
@@ -537,7 +580,7 @@ class CharacterBuilder:
     Args:
       advantages_list: a list of advantages filtered by choice for X/Sup
     """      
-    pa = self.getPrimaryAttribute()
+    pa = self.primary_attributes["pa"]
     if pa in ["HT", "ST", "DX"]:
       attr_type = "P"
     else: 
@@ -574,7 +617,7 @@ class CharacterBuilder:
     Args:
       disadvantages_list: a list of disadvantages filtered by choice for X/Sup
     """
-    pa = self.getPrimaryAttribute()
+    pa = self.primary_attributes["pa"]
     if pa in ["HT", "ST", "DX"]:
       attr_type = random.choice(["M", "Soc"])
     else: 
@@ -657,7 +700,6 @@ class CharacterBuilder:
           for spell in self.spells["spells"]:
             if college in spell[3]:
               counter += 1
-              Print(college)
           if counter < int(quantity):
             check = False; break
 
@@ -709,7 +751,12 @@ class CharacterBuilder:
         i for i in DISADVANTAGES_LIST[:] if i[2] in self.disadvantages["disadv_types"]]
 
     while self.misc["spent_points"] > 0:
-      
+      # Pick the first skill to get primary attributes and all that jolly good stuff set
+      if not self.skills["skills"]:
+        first_skill = self.pickSkill()
+        if not first_skill: continue
+        self.skills["skills"].append(first_skill)
+
       spend_limit = int(self.misc["spent_points"]) + 5
       if [i for i in self.advantages["advantages"] if "Magery" in i[0]]:
         choice = random.randint(1, 130)
@@ -719,15 +766,13 @@ class CharacterBuilder:
         self.pickSpell()
       # Add a skill
       skill_points = sum([n[-1] for n in self.skills["skills"]])
-      if choice < 83 and self.skills["skill_limit"] > skill_points:
+      if choice < 85 and self.skills["skill_limit"] > skill_points:
         raw_skill = self.pickSkill()
         if not raw_skill:
           continue
         self.skills["skills"].append(raw_skill)
       # Increase a stat
-      elif (choice > 82) and (choice < 92) and spend_limit > 10:
-        if not self.skills["skills"]:
-          continue
+      elif (choice > 84) and (choice < 92) and spend_limit > 10:
         self.increaseRandomAttribute()
       # Add an advantage
       elif (choice > 91) and (choice < 95):
@@ -740,7 +785,7 @@ class CharacterBuilder:
         self.pickDisadvantage(disadvantages_list)
       # Add a disadvantage when out of points
       while self.misc["spent_points"] < 0:
-        self.pickDisadvantage(disadvantages_list)    
+        self.pickDisadvantage(disadvantages_list)
 
   def build(self):
     """Assembles all of the above madness into a character."""

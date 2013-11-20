@@ -55,7 +55,7 @@ class MainPage(webapp2.RequestHandler):
     column = 0
     complete_html = "<table>"
     for cat in sorted(traits.traits.SKILL_CATEGORIES):
-      if column > 4:
+      if column > 5:
         column = 0
       if column == 0:
         complete_html += "<tr>"  # starts a new table row
@@ -93,7 +93,10 @@ class MainPage(webapp2.RequestHandler):
             "adv_types": self.request.get_all("adv_type"),
             "disadv_types": self.request.get_all("disadv_type"),
             "d_limit": self.request.get("d_limit"),
-            "categories": self.request.get_all("cat_type")
+            "categories": self.request.get_all("cat_type"),
+            "pa": self.request.get("pa"),
+            "sa": self.request.get("sa"),
+            "ta": self.request.get("ta")
             }
 
   def saveParameters(self, data):
