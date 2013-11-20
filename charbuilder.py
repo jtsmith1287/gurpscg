@@ -18,7 +18,7 @@ parser = Parse()
 parse = parser.parse
 
 def Print(*args):
-  logging.info(*args)
+  logging.info(args)
 
 class CharacterBuilder:
   """Forms everything about the character."""
@@ -52,6 +52,7 @@ class CharacterBuilder:
     self.primary_attributes = {"pa":form_data["pa"],
                                "sa":form_data["sa"],
                                "ta":form_data["ta"]}
+    self.fool_me = {"once" : [], "twice" : []}
     self.build()
 
   def formattedItems(self, item_list, header=None):
@@ -76,13 +77,18 @@ class CharacterBuilder:
   def setAppearance(self):
     """Sets height, weight, build, and physical appearance."""
     height_options = utils.getColumnFromTable(HEIGHT_TABLE, "height")
-    while True:
+    counter = 0
+    while counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 82")
       self.misc["build"] = BUILD_TABLE[0][utils.randBiDistrib(BUILD_TABLE[0], 2)]
       build_options = utils.getColumnFromTable(BUILD_TABLE, self.misc["build"])
       if self.checkDisadvantageLimit(build_options[-1]):
         break
-
-    while True:
+    counter = 0
+    while counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 90")
       physical_appearance = APPEARANCE_TABLE[0][utils.randBiDistrib(APPEARANCE_TABLE[0], 5)]
       appearance_choice = utils.getColumnFromTable(APPEARANCE_TABLE, physical_appearance)
       if self.checkDisadvantageLimit(appearance_choice[-1]):
@@ -125,7 +131,10 @@ class CharacterBuilder:
     """
 
     wealth = {}
-    while True:
+    counter = 0
+    while counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 136")
       wealth_status = WEALTH_TABLE[0][utils.randWeight(WEALTH_TABLE[0])]
       starting_wealth = STARTING_WEALTH[self.misc["TL"]]
       wealth_details = utils.getColumnFromTable(WEALTH_TABLE, wealth_status)
@@ -248,7 +257,7 @@ class CharacterBuilder:
     Note: the -5 leaves up to 5 points of wiggle room for overspending and to pick quirks
     """
     if (self.disadvantages["disadvantage_points"] - points) <= (
-          self.disadvantages["disadvantage_limit"] - 5):
+          self.disadvantages["disadvantage_limit"] - 2):
       return True
     else:
       return False
@@ -282,11 +291,27 @@ class CharacterBuilder:
     Returns:
       True or False: based on whether the characters skills have all prerequisites met
     """
+    check = True
     for skill in self.skills["skills"]:
       if not self.checkPrereqs(skill):
+        if skill[0] in self.fool_me["once"]: # Prevents recursion
+          self.fool_me["twice"].append(skill[0])
+          self.fool_me["once"].remove(skill[0])
+        else:
+          self.fool_me["once"].append(skill[0])
+        check = False
+        Print("removing this skill due to failed prerequisites", skill[0])
+        self.updatePoints(0-skill[-1])
         self.skills["skills"].remove(skill)
-        return False
-    return True
+        for dis in self.disadvantages["disadvantages"]:
+          if "Quirk" in dis[0]:
+            self.disadvantages["disadvantages"].remove(dis)
+            self.updatePoints(1)
+            self.disadvantages["disadvantage_points"] -= 1
+    if check:
+      return True
+    else:
+      return False
 
   def checkPrereqs(self, skill):
     """Checks if the prerequisites for a skill are met.
@@ -367,11 +392,8 @@ class CharacterBuilder:
                   3: "Blended",
                   4: "Well Rounded"}
       for unused in xrange(random.randint(1, len(template))):
-        while True:
-          cat = random.choice(list(SKILL_CATEGORIES))
-          if cat not in skill_cats:
-            skill_cats.append(cat)
-            break
+        cat = random.choice([i for i in SKILL_CATEGORIES if i not in skill_cats])
+        skill_cats.append(cat)
       # self.skills["focus"] = template[len(skill_cats)]
       self.skills["categories"] = skill_cats
 
@@ -461,7 +483,10 @@ class CharacterBuilder:
     point_table = utils.getColumnFromTable(SKILL_COST_TABLE, "PS")
     # Then we'll get a weighted random point cost from that list
     points_to_spend = point_table[utils.randBiDistrib(point_table, 1)]
-    while points_to_spend > int(self.misc["spent_points"]) + 5:
+    counter = 0
+    while counter < 1000 and points_to_spend > int(self.misc["spent_points"]) + 1:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 477")
       points_to_spend = point_table[utils.randBiDistrib(point_table, 1)]
     # We'll need the column for where we're going to get the relative skill level
     # based on the already chosen point cost
@@ -489,25 +514,29 @@ class CharacterBuilder:
     probable_skills = self.getPossibleSkills()
     good_candidates = self.getGoodCandidateSkills(probable_skills)
     chance = random.randint(1, 10)
-    while not skill:
+    counter = 0
+    while not skill and counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 496")
       if good_candidates and chance > 2:
         skill_list = good_candidates
       elif probable_skills and chance < 3:
         skill_list = probable_skills
       else:
         return
-      skill_choice = random.choice(skill_list)[:]
-      if skill_choice[0] in [ass[0] for ass in self.skills["skills"]]:
+      skill_choice = random.choice(skill_list[:])
+      if skill_choice[0] in self.fool_me["twice"]: # Skill has been picked
+        Print("shame on you! %s(picked twice, removing option)" % skill_choice[0])
+        skill_list.remove(skill_choice) # and removed once already
+      elif skill_choice[0] in [ass[0] for ass in self.skills["skills"]]:
         skill_list.remove(skill_choice)
       else:
         skill = skill_choice
+    # Set the level of a copy of the skill
+    skill = self.setSkillLevel(skill[:])
     # If this is the first skill then we want to increase the primary attr
     if not self.skills["skills"]:
       self.determinePrimaryAttribute(skill[1])
-      
-      
-    # Set the level of a copy of the skill and return the copy
-    skill = self.setSkillLevel(skill[:])
 
     return skill
 
@@ -519,7 +548,7 @@ class CharacterBuilder:
     attrs = {}
     choice = None
     chance = random.random()
-    if (int(self.misc["spent_points"]) + 5) < 20:
+    if (int(self.misc["spent_points"]) + 1) < 20:
       if chance > .8: return # Prevent this from happening a bunch
       choice = random.choice(["HT", "ST"])
       self.updateAttrPoints(choice, 1)
@@ -592,20 +621,25 @@ class CharacterBuilder:
                     cat in self.skills["categories"] for cat in i[-1]) and (
                         i[0] not in [name[0] for name in self.advantages["advantages"]])]
     ideal_list = [i for i in pa_based_list if i in cat_list]
-
-    while True:
+    counter = 0
+    while counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 602")
       if random.random() > .05:
         if ideal_list:
           chosen_advantage = random.choice(ideal_list)[:]
         else:
           chosen_advantage = random.choice(pa_based_list)[:]
       else:
-        while True:
+        aux_counter = 0
+        while aux_counter < 1000:
+          aux_counter +=1
+          if aux_counter > 998:Print("out of control while loop line 610")
           chosen_advantage = random.choice(advantages_list)[:]
           if chosen_advantage[0] not in [i[0] for i in self.advantages["advantages"]]:
             break
       points = parse(chosen_advantage[3])
-      if points < int(self.misc["spent_points"]) + 5:
+      if points < int(self.misc["spent_points"]) + 1:
         break
 
     self.updatePoints(points)
@@ -622,26 +656,29 @@ class CharacterBuilder:
       attr_type = random.choice(["M", "Soc"])
     else: 
       attr_type = "P"
-    
+    wiggle_room = int(self.disadvantages["disadvantage_limit"]) - int(self.disadvantages["disadvantage_points"])
     # If we're about maxed on disadvantages and spent points, pick quirks instead
     if self.misc["spent_points"] < 0:
-      points_left = (self.disadvantages["disadvantage_limit"]) - (
-          self.disadvantages["disadvantage_points"])
-      if points_left <= 5:
-        for unused_point in range(points_left):
+      if wiggle_room <= 5:
+        for unused_point in range(wiggle_room):
           self.updatePoints(-1)
           self.disadvantages["disadvantages"].append(
               ["Quirk", "M/P/Soc", "-", -1, "162"])
           if self.misc["spent_points"] == 0:
             return
-        
-    while True:
+    counter = 0
+    while counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 660")
       if random.random() > .05:
         pa_based_list = [i for i in disadvantages_list if i[1] == attr_type and i[0] not in [
             name[0] for name in self.disadvantages["disadvantages"]]]
         chosen_disadvantage = random.choice(pa_based_list)[:]
       else:
-        while True:
+        aux_counter = 0
+        while aux_counter < 1000:
+          aux_counter +=1
+          if aux_counter > 998:Print("out of control while loop line 654")
           chosen_disadvantage = random.choice(disadvantages_list)[:]
           if chosen_disadvantage[0] not in [i[0] for i in self.disadvantages["disadvantages"]]:
             break
@@ -749,42 +786,62 @@ class CharacterBuilder:
         i for i in ADVANTAGES_LIST[:] if i[2] in self.advantages["adv_types"]]
     disadvantages_list = [
         i for i in DISADVANTAGES_LIST[:] if i[2] in self.disadvantages["disadv_types"]]
-
-    while self.misc["spent_points"] > 0:
-      # Pick the first skill to get primary attributes and all that jolly good stuff set
-      if not self.skills["skills"]:
-        first_skill = self.pickSkill()
-        if not first_skill: continue
-        self.skills["skills"].append(first_skill)
-
-      spend_limit = int(self.misc["spent_points"]) + 5
+    counter = 0
+    while self.misc["spent_points"] > 0 and counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 779")
+      skill_points = sum([n[-1] for n in self.skills["skills"]])
+      spend_limit = int(self.misc["spent_points"]) + 1
       if [i for i in self.advantages["advantages"] if "Magery" in i[0]]:
         choice = random.randint(1, 130)
       else:
         choice = random.randint(1, 100)
-      if choice > 100:
+
+      # Pick the first skill to get primary attributes and all that jolly good stuff set
+      if not self.skills["skills"]:
+        Print("points left:",self.misc["spent_points"], "picking first skill")
+        first_skill = self.pickSkill()
+        if not first_skill: continue
+        self.skills["skills"].append(first_skill)
+      elif choice > 100:
+        Print("points left:",self.misc["spent_points"], "picking SPELL")
         self.pickSpell()
       # Add a skill
-      skill_points = sum([n[-1] for n in self.skills["skills"]])
-      if choice < 85 and self.skills["skill_limit"] > skill_points:
+      elif choice < 85 and self.skills["skill_limit"] > skill_points:
+        Print("points left:",self.misc["spent_points"], "picking skill")
         raw_skill = self.pickSkill()
         if not raw_skill:
           continue
         self.skills["skills"].append(raw_skill)
       # Increase a stat
       elif (choice > 84) and (choice < 92) and spend_limit > 10:
+        Print("points left:",self.misc["spent_points"], "raising stat")
         self.increaseRandomAttribute()
       # Add an advantage
       elif (choice > 91) and (choice < 95):
+        Print("points left:",self.misc["spent_points"], "picking advantage")
         self.pickAdvantage(advantage_list)
       # Decrease a stat
       elif (choice > 94) and (choice < 98):
+        Print("points left:",self.misc["spent_points"], "decreasing stat")
         self.decreaseRandomAttribute()
       # Add a disadvantage
       elif (choice > 97) and (choice < 101) and self.checkDisadvantageLimit(-5):
+        Print("points left:",self.misc["spent_points"], "picking disadvantage")
         self.pickDisadvantage(disadvantages_list)
-      # Add a disadvantage when out of points
+      # Add a disadvantage when out of points or at 0 and still have disadvantage points
+      wiggle_room = int(self.disadvantages["disadvantage_limit"]) - int(
+                        self.disadvantages["disadvantage_points"])
+      if self.misc["spent_points"] == 0 and wiggle_room > 5:
+        Print("picking disadvantage(0 points and still some wiggle room)", wiggle_room)
+        self.pickDisadvantage(disadvantages_list)
+
+      aux_counter = 0
       while self.misc["spent_points"] < 0:
+        Print("disadvantage wiggle room is %s" % wiggle_room)
+        Print("points left:",self.misc["spent_points"], "picking disadvantage")
+        aux_counter += 1
+        if aux_counter > 998:Print("out of control while loop line 826");break
         self.pickDisadvantage(disadvantages_list)
 
   def build(self):
@@ -796,7 +853,11 @@ class CharacterBuilder:
     self.setWealth()
     # Configures all other attributes of the character
     self.chooseSkillCategories()
-    while True:
+    counter = 0
+    while counter < 1000:
+      counter +=1
+      if counter > 998:Print("out of control while loop line 845")
+      if counter > 0: Print("BWAH NOT DONE YET(removing quirks and build looping again")
       self.runCharacterBuildLoop()
       self.updateSecondaryAttributes()
       self.updateSkillLevels()

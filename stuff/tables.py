@@ -51,7 +51,7 @@ WEALTH_TABLE = [["Dead Broke", "Poor", "Struggling", "Average", "Comfortable", "
                  "Comfortable: You work for a living, but your lifestyle is better than most. Your starting wealth is twice the average. 10 points.",
                  "Your starting wealth is five times average; you live very well indeed. 20 points.",
                  "Your starting wealth is 20 times the average. 30 points",
-                 "Your starting wealth is 100 times average. You can buy almost anything you want without considering the cost",
+                 "Your starting wealth is 100 times average. You can buy almost anything you want without considering the cost. 50 points",
                  "Filthy rich doesn't even begin to describe your wealth! For every 25 points you spend beyond the 50 points to be Filthy Rich, increase your starting wealth by another factor of 10: Multimillionaire 1 costs 75 points and gives 1,000 times average starting wealth, Multimillionaire 2 costs 100 points gives 10,000 times starting wealth, and so on. 50 points + 25 points/level of Multimillionaire."],
                 [0, .2, .5, 1, 2, 5, 20, 100, 1000],
                 [-25, -15, -10, 0, 10, 20, 30, 50, 75]]
@@ -68,7 +68,7 @@ DAMAGE_TABLE = [("1d-6","1d-5"),("1d-6","1d-5"),("1d-5","1d-4"),("1d-5","1d-4"),
 SKILL_COST_TABLE = [["PS", "E", "A", "H", "VH"],
                     [1,     0,   -1,  -2,  -3],
                     [2,     1,    0,  -1,  -2],
-                    [4,     2,    0,  -1,  -2],
+                    [4,     2,    1,   0,  -1],
                     [8,     3,    2,   1,   0],
                     [12,    4,    3,   2,   1],
                     [16,    5,    4,   3,   2]]
