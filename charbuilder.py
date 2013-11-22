@@ -85,6 +85,15 @@ class CharacterBuilder:
       base_stats[stat[:]] = v
     return base_stats
 
+  @Memoize
+  def getChoices(self):
+    """Anything the user specified that might be needed that gets overwritten later."""
+    the_stuff = {}
+    for k,v in self.primary_attributes.items():
+      the_stuff[k] = v
+    # Potentially more things here later
+    return the_stuff
+
   def setAppearance(self):
     """Sets height, weight, build, and physical appearance."""
     height_options = utils.getColumnFromTable(HEIGHT_TABLE, "height")
@@ -541,7 +550,6 @@ class CharacterBuilder:
 
   def increaseRandomAttribute(self):
     """Picks an attribute to increase by one, weighted to the common skill attribute."""
-    primary = self.primary_attributes["pa"]
     secondary = self.primary_attributes["sa"]
     tertiary = self.primary_attributes["ta"]
     attrs = {}
@@ -554,18 +562,18 @@ class CharacterBuilder:
       self.updateAttrPoints(choice, 1)
       self.basic_attributes[choice] += 1
       return
-    if chance < 0.4001:
-      for skill in self.skills["skills"]:
-        try:
-          attrs[skill[1]] += 1
-        except KeyError:
-          attrs[skill[1]] = 1
-      high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
-      if high_attr in primary_attributes:
-        if chance > .22:
-          choice = high_attr
-        else:
-          choice = primary
+    if chance < 0.5001:
+      if self.getChoices()["pa"]:
+        choice = self.getChoices()["pa"]
+      else:
+        for skill in self.skills["skills"]:
+          try:
+            attrs[skill[1]] += 1
+          except KeyError:
+            attrs[skill[1]] = 1
+        high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
+        if high_attr in primary_attributes:
+            choice = high_attr
     elif tertiary and secondary:
       this_choice = random.random()
       if this_choice > .4:
@@ -862,12 +870,15 @@ class CharacterBuilder:
         aux_counter += 1
         if aux_counter > 998:Print("out of control while loop line 857");break
         self.pickDisadvantage(disadvantages_list)
+        wiggle_room = int(self.disadvantages["disadvantage_limit"]) - int(
+                          self.disadvantages["disadvantage_points"])
       if self.misc["spent_points"] == 0 and wiggle_room > 5:
         Print("picking disadvantage(0 points and still some wiggle room)", wiggle_room)
         self.pickDisadvantage(disadvantages_list)
 
   def build(self):
     """Assembles all of the above madness into a character."""
+    self.getChoices()
     self.getBaseStats()
     self.getMustHaves()
     # Sets height, weight, appearance and physical build
