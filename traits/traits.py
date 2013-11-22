@@ -31,4 +31,3 @@ for line in data["disadvantages.gdat"]:
 for line in data["spells.gdat"]:
   item = eval(line)
   SPELL_LIST.append(item)
-
