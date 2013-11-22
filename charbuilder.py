@@ -541,7 +541,7 @@ class CharacterBuilder:
 
   def increaseRandomAttribute(self):
     """Picks an attribute to increase by one, weighted to the common skill attribute."""
-    
+    primary = self.primary_attributes["pa"]
     secondary = self.primary_attributes["sa"]
     tertiary = self.primary_attributes["ta"]
     attrs = {}
@@ -554,7 +554,7 @@ class CharacterBuilder:
       self.updateAttrPoints(choice, 1)
       self.basic_attributes[choice] += 1
       return
-    if chance < 0.4501:
+    if chance < 0.4001:
       for skill in self.skills["skills"]:
         try:
           attrs[skill[1]] += 1
@@ -562,7 +562,10 @@ class CharacterBuilder:
           attrs[skill[1]] = 1
       high_attr = max(attrs.iteritems(), key=operator.itemgetter(1))[0]
       if high_attr in primary_attributes:
-        choice = high_attr
+        if chance > .22:
+          choice = high_attr
+        else:
+          choice = primary
     elif tertiary and secondary:
       this_choice = random.random()
       if this_choice > .4:
@@ -577,12 +580,13 @@ class CharacterBuilder:
     if not choice: 
       choice = random.choice(["ST", "HT", "IQ", "DX"])
 
-    if self.basic_attributes[choice] < self.getBaseStats()[choice]:
-      self.updateAttrPoints(choice, 1, True)
-    else:
-      self.updateAttrPoints(choice, 1)
-    Print("increasing",choice)
-    self.basic_attributes[choice] += 1
+    if self.basic_attributes[choice] < 20: #<--- max possible attribute
+      if self.basic_attributes[choice] < self.getBaseStats()[choice]:
+        self.updateAttrPoints(choice, 1, True)
+      else:
+        self.updateAttrPoints(choice, 1)
+      Print("increasing",choice)
+      self.basic_attributes[choice] += 1
 
   def decreaseRandomAttribute(self):
     """Picks one of the lowest attributes and reduces it by 1."""
