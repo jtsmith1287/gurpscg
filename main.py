@@ -36,20 +36,54 @@ class Parameters(db.Model):
 
 class MainPage(webapp2.RequestHandler):
 
-  fields = {"cat_checkboxes": ""}
+  fields = {"cat_checkboxes": "",
+            "spell_checkboxes": ""}
 
   def get(self):
     """
     """
     self.response.headers['Content-Type'] = 'text/html'  # tells the page to load as html instead of plain text
     try:
-      self.configureCheckboxes()
-      print self.fields
+      self.configureCatBoxes()
+      self.configureSpellCollegeCheckboxes()
       self.response.write(HTML["main_page"] % self.fields)  # renders the main_page.html contents
     except Exception:
       self.response.write(traceback.format_exc())  # if there was an error, write that instead of the main_page
 
-  def configureCheckboxes(self):
+  def configureSpellCollegeCheckboxes(self):
+
+    spell_colleges = {"MC": "Mind Control",
+                      "Meta": "Meta",
+                      "L/D": "Light & Darkness",
+                      "Move.": "Movement",
+                      "BC": "Body Control",
+                      "Fire": "Fire",
+                      "P/W": "Protection & Warning",
+                      "Air": "Air",
+                      "Water": "Water",
+                      "Ench.": "Enchantment",
+                      "C/E": "Communication & Emptahy",
+                      "Healing": "Healing",
+                      "Know.": "Knowledge",
+                      "Earth": "Earth",
+                      "Gate": "Gate",
+                      "Necro.": "Necromantic"}
+    
+    checkbox_html = '<input type="checkbox" name="spell_colleges" value="%s"> %s'
+    column = 0
+    complete_html = "<table>"
+    for cat in sorted(spell_colleges.keys()):
+      if column > 5:
+        column = 0
+      if column == 0:
+        complete_html += "<tr>"  # starts a new table row
+      y = checkbox_html % (cat, spell_colleges[cat])  # this puts whatever the current category is as the value and text to display
+      complete_html += "<td> %s </td>" % (y)  # puts the entire line as column with the td tag
+      column += 1  # go to the next column
+    complete_html += "</table>"  # close the table
+    self.fields["spell_checkboxes"] = complete_html
+
+  def configureCatBoxes(self):
 
     checkbox_html = '<input type="checkbox" name="cat_type" value="%s"> %s'
     column = 0
@@ -73,6 +107,7 @@ class MainPage(webapp2.RequestHandler):
     try:
       try:
         fd = self.getRequests()
+        logging.info(fd)
         self.saveParameters(fd)
       except ValueError:
         fd = self.getParameters()
@@ -96,7 +131,8 @@ class MainPage(webapp2.RequestHandler):
             "categories": self.request.get_all("cat_type"),
             "pa": self.request.get("pa"),
             "sa": self.request.get("sa"),
-            "ta": self.request.get("ta")
+            "ta": self.request.get("ta"),
+            "spell_colleges": self.request.get_all("spell_colleges")
             }
 
   def saveParameters(self, data):

@@ -33,22 +33,18 @@
 	<b>Total:</b> %(total_points)s | <b>Remaining:</b> %(spent_points)s
   <h3>
    <u>Attributes</u></h3>
-  <p><font size="2">
-   <b>ST:</b> %(ST)s | <b>HP:</b> %(HP)s<br />
-   <b>DX:</b> %(DX)s | <b>Per:</b> %(Per)s<br />
-   <b>IQ:</b> %(IQ)s | <b>Will:</b> %(Will)s<br />
-   <b>HT:</b> %(HT)s | <b>FP:</b> %(FP)s<br />
-   <br />
-   <b>Size Modifier:</b> %(SM)s | <b>Damage:</b> thrust(%(thrust)s) swing(%(swing)s)<br />
-   <b>Basic Speed:</b> %(basic_speed)s | <b>Basic Move:</b> %(basic_move)s | <b>Basic Lift:</b> %(basic_lift)s <br><br>
-   <b><u>Encumbrance</u></b><br>
-   <b>None:</b> %(none)s<br>
-   <b>Light:</b> %(light)s<br>
-   <b>Medium:</b> %(medium)s<br>
-   <b>Heavy:</b> %(heavy)s<br>
-   <b>Extra Heavy:</b> %(extra_heavy)s<br>
+  <font size="2">
+   <table border="5" cellpadding="4" cellspacing="4">
+   <tr><th colspan="2"><b>Stats</b></th>  <th><b>  Misc.</b></th><th> <b>  Encumbrance</b></th></tr>
+   <tr><td><b>ST:</b> %(ST)s</td><td>  <b>HP:</b> %(HP)s</td><td> <b>  Size Modifier:</b> %(SM)s</td><td><b>  None:</b> %(none)s</td></tr>
+   <tr><td><b>DX:</b> %(DX)s</td><td>  <b>Per:</b> %(Per)s</td><td> <b>  Basic Lift:</b> %(basic_lift)s</td><td><b>  Light:</b> %(light)s</td></tr>
+   <tr><td><b>IQ:</b> %(IQ)s</td><td>  <b>Will:</b> %(Will)s</td><td> <b>  Basic Speed:</b> %(basic_speed)s</td><td><b>  Medium:</b> %(medium)s</td></tr>
+   <tr><td><b>HT:</b> %(HT)s</td><td>  <b>FP:</b> %(FP)s<br /></td><td> <b>  Basic Move:</b> %(basic_move)s</td><td><b>  Heavy:</b> %(heavy)s</td></tr>
+   <tr><td colspan="2" align="right"><b>Damage</b></td><td> thrust(%(thrust)s) swing(%(swing)s) </td><td><b>  Extra Heavy:</b> %(extra_heavy)s</td></tr>
+   </table>
+
    
-   </font></p>
+   </font>
    
   <h3>
     <u>Appearance</u></h3>

@@ -23,7 +23,7 @@
         <div><br>
 
           Fill out the following fields and click 'Generate Character'.<br><br>
-          <b>Enter point total (1-500):</b> <input type="text" name="points" value="150"><br><br>
+          <b>Enter point total (1-600):</b> <input type="text" name="points" value="150"><br><br>
 
           <b>Please select TL: </b>
           <select name="Tech Level">
@@ -50,9 +50,14 @@
             <tr><td><input type="radio" name="pa" value="IQ"> IQ</td><td><input type="radio" name="sa" value="IQ"> IQ</td><td><input type="radio" name="ta" value="IQ"> IQ</td>
 			<tr><td><input type="radio" name="pa" value="HT"> HT</td><td><input type="radio" name="sa" value="HT"> HT</td><td><input type="radio" name="ta" value="HT"> HT</td>
 			</table>
-          <b>Character Types</b><br>
+          <br><b>Character Types</b><br>
           
           %(cat_checkboxes)s
+          
+          <br><b>Spell Schools</b>
+          
+          %(spell_checkboxes)s
+          
           </font>
           <input type="submit" value="Generate Character!">
         </div>

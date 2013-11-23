@@ -193,7 +193,7 @@
 ['Housekeeping', 'IQ', 'E', [1, 13], [], '200', ['Everyman']]
 ['Hypnotism', 'IQ', 'H', [3, 13], [], '201', ['Psychology', 'Psionic', 'Esoteric', 'Occult', 'Magical']]
 ['Immovable Stance', 'DX', 'H', [2, 13], ['Trained By A Master Advantage'], '201', ['Technical', 'Combat', 'Athletic']]
-['Innate Attack*', 'DX', 'E', [0, 13], ['Innate Attack Advantage or Magery Advantage'], '201', ['Combat', 'Ranged Weapon']]
+['Innate Attack*', 'DX', 'E', [0, 13], ['Innate Attack Advantage or Magery Advantage or Affliction Advantage or Binding Advantage'], '201', ['Combat', 'Ranged Weapon']]
 ['Intelligence Analysis/TL', 'IQ', 'H', [2, 13], [], '201', ['Spy', 'Military']]
 ['Interrogation', 'IQ', 'A', [0, 13], [], '202', ['Police', 'Psychology', 'Criminal']]
 ['Intimidation', 'Will', 'A', [0, 13], [], '202', ['Psychology', 'Social', 'Combat']]
