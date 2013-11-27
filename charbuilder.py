@@ -43,7 +43,8 @@ class CharacterBuilder:
                        form_data["points"], form_data["d_limit"])) * 0.24,
                    "categories": form_data["categories"]}
     self.advantages = {"advantages": [],
-                       "adv_types": form_data["adv_types"]}
+                       "adv_types": form_data["adv_types"],
+                       "talents" : {}}
     self.disadvantages = {"disadvantages": [],
                           "disadvantage_points": 0,
                           "disadv_types": form_data["disadv_types"],
@@ -394,15 +395,26 @@ class CharacterBuilder:
       skill[3] = self.misc["TL"]
       skill.pop(4)
 
+  def updatePsiTalents(self):
+    """
+    """
+    if self.advantages["talents"]:
+      for talent, value in self.advantages["talents"].items():
+        points = value * 5
+        name = "%s talent (%s)" % (talent, value)
+        self.advantages["advantages"].append([name, "-", "Sup", points, "256/257"])
+
   def chooseSkillCategories(self):
     """Chooses between 1 and 4 skill categories if not already chosen."""
     # The key == how many skill categories the character will have.
     skill_cats = self.skills["categories"]
     unsatisfactory = ["Alien", "Cyborg"] # cats that don't have associated skills
     holding = []
-    for mrowl in skill_cats:
-      if mrowl in unsatisfactory:
-        holding.append(skill_cats.pop(skill_cats.index(mrowl)))
+    for mrowl in unsatisfactory:
+      if mrowl in skill_cats:
+        holding.append(mrowl)
+        skill_cats.remove(mrowl)
+
     if not skill_cats:
       template = {2: "Focused",
                   3: "Specialized",
@@ -412,10 +424,10 @@ class CharacterBuilder:
         cat = random.choice([i for i in SKILL_CATEGORIES if i not in skill_cats])
         skill_cats.append(cat)
       # self.skills["focus"] = template[len(skill_cats)]
-      if holding:
-        for meow in holding:
-          skill_cats.append(meow)
-      self.skills["categories"] = skill_cats
+    if holding:
+      for meow in holding:
+        skill_cats.append(meow)
+    self.skills["categories"] = skill_cats
 
   def generateMustHaveLists(self, items):
     """Generates a list items that must be in the character per category choices.
@@ -833,6 +845,65 @@ class CharacterBuilder:
         spell_choice = self.setSkillLevel(potential_spell[:])
         self.spells["spells"].append(spell_choice)
 
+  @Memoize
+  def generatePsiPowers(self):
+    """Generates a list of psionic advantages.
+    Returns:
+      psionic_ads: A list of all psionic power advantages"""
+    psionic_powers = ["Antipsi", "Esp", "Psychic Healing",
+                      "Psychokinesis", "Telepathy", "Teleportation"]
+    psionic_ads = []
+    for adv in ADVANTAGES_LIST[:]:
+      if any(i in psionic_powers for i in adv[-1] if i in self.skills["categories"]):
+        psionic_ads.append(adv[:])
+
+    return psionic_ads
+
+  def pickPsi(self):
+    """
+    """
+    psionic_powers = self.generatePsiPowers()
+    available = [power for power in psionic_powers if power[0] not in (
+                    [current[0] for current in self.advantages["advantages"]])]
+    psionic_talents = ["Esp", "Psychic Healing",
+                         "Psychokinesis", "Telepathy", "Teleportation"]
+    chance = random.random()
+    picked = None
+    if not any(i in self.advantages["advantages"] for i in available): # No powers yet
+      chance += 1
+    if self.misc["spent_points"] < 15: # Check for enough points to buy a power
+      chance -= 2
+    if chance > .7: # Pick a psionic advantage
+      counter = 0
+      while True:
+        counter += 1
+        if counter > 50:
+          Print("Failed to pick a psionic advantage!")
+          return
+        picked = random.choice(available)
+        if len(psionic_talents) < 6:
+          psionic_talents.append("Antipsi")
+        points = round(parse(picked[3]) * .9) # Sets points and applies psionic 10% discount
+        if points > self.misc["spent_points"] + 3:
+          continue
+        else:
+          break
+      self.updatePoints(points)
+      picked[3] = points
+      cat = [i for i in picked[-1] if i in psionic_talents][0]
+      picked[0] = "%s (%s)" % (picked[0], cat)
+      self.advantages["advantages"].append(picked)
+
+    else: # Raise a talent level
+      talent = random.choice(
+                   [i for i in psionic_talents if i in self.skills["categories"]])
+      try:
+        self.advantages["talents"][talent] += 1
+      except KeyError:
+        self.advantages["talents"][talent] = 1
+
+      self.updatePoints(5)
+
   def runCharacterBuildLoop(self):
     """Runs the loop that picks skills/(dis)advantages and in/decreases attributes."""
     advantage_list = [
@@ -840,6 +911,8 @@ class CharacterBuilder:
     disadvantages_list = [
         i for i in DISADVANTAGES_LIST[:] if i[2] in self.disadvantages["disadv_types"]]
     counter = 0
+    psionic_powers = ["Antipsi", "Esp", "Psychic Healing",
+                      "Psychokinesis", "Telepathy", "Teleportation"]
     while self.misc["spent_points"] > 0 and counter < 1000:
       counter +=1
       if counter > 998:Print("out of control while loop line 809")
@@ -856,6 +929,11 @@ class CharacterBuilder:
         first_skill = self.pickSkill()
         if not first_skill: continue
         self.skills["skills"].append(first_skill)
+      # Add a psionic power
+      elif choice > 95 and choice < 101 and any(
+          i in psionic_powers for i in self.skills["categories"]):
+        if self.misc["spent_points"] > 5:
+          self.pickPsi()
       elif choice > 100:
         Print("points left:",self.misc["spent_points"], "picking SPELL")
         self.pickSpell()
@@ -919,6 +997,7 @@ class CharacterBuilder:
       self.updateSkillLevels()
       if self.auditSkillPrereqs():
         break
+    self.updatePsiTalents()
     self.cleanAds(self.advantages["advantages"])
     self.cleanAds(self.disadvantages["disadvantages"])
     self.cleanSkills()

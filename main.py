@@ -85,10 +85,16 @@ class MainPage(webapp2.RequestHandler):
 
   def configureCatBoxes(self):
 
+    psionic_powers = ["Antipsi", "Esp", "Psychic Healing", 
+                      "Psychokinesis", "Teleportation", "Telepathy"]
+    power_cats = []
     checkbox_html = '<input type="checkbox" name="cat_type" value="%s"> %s'
     column = 0
     complete_html = "<table>"
     for cat in sorted(traits.traits.SKILL_CATEGORIES):
+      if cat in psionic_powers:
+        power_cats.append(cat)
+        continue
       if column > 5:
         column = 0
       if column == 0:
@@ -96,8 +102,19 @@ class MainPage(webapp2.RequestHandler):
       y = checkbox_html % (cat, cat)  # this puts whatever the current category is as the value and text to display
       complete_html += "<td> %s </td>" % (y)  # puts the entire line as column with the td tag
       column += 1  # go to the next column
-
-    complete_html += "</table>"  # close the table
+    complete_html += "</table>"
+    complete_html += "<br><b>Psionic Powers</b><br>"
+    complete_html += "<table>"
+    column = 0
+    for cat in power_cats:
+      if column > 5:
+        column = 0
+      if column == 0:
+        complete_html += "<tr>"  # starts a new table row
+      y = checkbox_html % (cat, cat)  # this puts whatever the current category is as the value and text to display
+      complete_html += "<td> %s </td>" % (y)  # puts the entire line as column with the td tag
+      column += 1
+    complete_html += "</table>"
     self.fields["cat_checkboxes"] = complete_html
 
   def post(self):
