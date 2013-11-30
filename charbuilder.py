@@ -29,7 +29,7 @@ class CharacterBuilder:
     self.misc = {"total_points": form_data["points"],
                  "spent_points": form_data["points"],
                  "build": None,
-                 "age": random.randint(18, 64),
+                 "age": utils.randBiDistrib(range(18, 65), 28),
                  "gender": random.choice(["Male", "Female"]),
                  "TL": form_data["tl"]}
     self.basic_attributes = {"ST": 10, "DX": 10,   "IQ": 10,  "HT": 10,
@@ -55,7 +55,7 @@ class CharacterBuilder:
     self.primary_attributes = {"pa":form_data["pa"],
                                "sa":form_data["sa"],
                                "ta":form_data["ta"]}
-    self.fool_me = {"once" : [], "twice" : []}
+    self.fool_me = {"once" : [], "twice" : [], "speller" : {}}
     self.build()
 
   def formattedItems(self, item_list, header=None):
@@ -347,13 +347,14 @@ class CharacterBuilder:
             advantage_or_list.append(item.replace(" Advantage",""))
           elif item not in current_skills:
             return False
-        if advantage_or_list and not any(
-            i in current_advantages for i in advantage_or_list):
+        if advantage_or_list and not [i in advantage_or_list for i in current_advantages]:
+          Print(advantage_or_list, current_advantages)
           return False
 
       elif "Advantage" in block:
         advantage = block.replace(" Advantage","")
         if advantage not in current_advantages:
+          
           return False
 
       elif "+" in block:
@@ -708,7 +709,7 @@ class CharacterBuilder:
     counter = 0
     while counter < 1000:
       counter +=1
-      if counter > 998:Print("out of control while loop line 673")
+      if counter > 998:Print("out of control while loop line 712")
       if random.random() > .05:
         pa_based_list = [i for i in disadvantages_list if i[1] == attr_type and i[0] not in [
             name[0] for name in self.disadvantages["disadvantages"]]]
@@ -721,7 +722,7 @@ class CharacterBuilder:
         aux_counter = 0
         while aux_counter < 1000:
           aux_counter +=1
-          if aux_counter > 998:Print("out of control while loop line 686")
+          if aux_counter > 998:Print("out of control while loop line 725")
           chosen_disadvantage = random.choice(disadvantages_list)[:]
           if chosen_disadvantage[0] not in [i[0] for i in self.disadvantages["disadvantages"]]:
             break
@@ -747,38 +748,58 @@ class CharacterBuilder:
           if self.misc["spent_points"] == 0:
             return True
 
-  def pickSpell(self):
+  def pickSpell(self, potential_spell=[], limiter=0):
+    """Picks spells, filters for prerequisite spells and tries to get them as well.
+    Args:
+      potential_spell: list of a spell to try to pick (like a prerequisite)
+      limiter: int of 10 minus how many times to try to pick a spell before giving up
+    Returns:
+      True: returns true if there are no more spells to pick from, otherwise no return
     """
-    """
+    # Some spells keep getting picked but prereqs can't be met
+    not_gonna_happen = []
+    for spell_name, times_picked in self.fool_me["speller"].items():
+      if times_picked > 4:
+        not_gonna_happen.append(spell_name)
+    if potential_spell and potential_spell[0] in not_gonna_happen:
+      potential_spell = []
+    Print(not_gonna_happen)
+
+    # Build list of spells to pick from
+    spell_list = []
     if not self.spells["spells"]:
       potential_spell_list = [i[:] for i in SPELL_LIST[:]]
     else:
-      potential_spell_list = [i[:] for i in SPELL_LIST if (
-                       i[0] not in [x[0] for x in self.spells["spells"]])]
-    spell_list = []
+      potential_spell_list = [
+          hocus[:] for hocus in SPELL_LIST if not [
+          x for x in self.spells["spells"] if x[0] == hocus[0]] and not [
+          y for y in not_gonna_happen if y == hocus[0]]]
     if self.spells["spell_colleges"]:
       for spell in potential_spell_list:
         if spell[3] in self.spells["spell_colleges"]:
           spell_list.append(spell)
-      if not spell_list:
-        return
-    if not spell_list:
-      spell_list = potential_spell_list
-    Print("Choosing from %s" %(spell_list))
-    if not spell_list: return
+    else:
+      spell_list = potential_spell_list 
+    Print("Choosing from spells")
+    if not spell_list: return True
+    if self.spells["spells"] and potential_spell and [
+        i for i in self.spells["spells"] if potential_spell[0] == i[0]]:
+      potential_spell = []
+
+    # Try 10 times to pick a spell (unless limiter passed only to try to pick a prereq)
     spell_choice = []
-    limiter = 0 # To prevent infinite loop which happens with high points and low magery
-    while limiter < 50:
-      limiter += 1
+    get_prereq = []
+    needs_prereq = []
+    while limiter < 10:
+      limiter += 1        
       check = True
-      potential_spell = random.choice(spell_list)
+      if not potential_spell:
+        potential_spell = random.choice(spell_list)
+      Print(potential_spell)
       prereqs = potential_spell[-1]
+      Print(prereqs)
       elements = prereqs.split(", ")
-      # This should never happen, but just in case
-      if potential_spell[0] in [i[0] for i in self.spells["spells"]]:
-        Print("FAILBADBALLS %s" % potential_spell[0])
-        check = False
-        continue
+
       for prereq in elements:
         # This prerequisite is for Magery level
         if "Magery" in prereq:
@@ -787,13 +808,14 @@ class CharacterBuilder:
             if "Magery" in ad[0]:
               if ad[3] < level_points:
                 check = False; break
-        
+
         # This prerequisite is an existing spell
-        elif prereq in [i[0] for i in spell_list]:
+        elif [i for i in SPELL_LIST if i[0] == prereq]:
           if not self.spells["spells"]: check = False; break
-          if prereq not in [i[0] for i in self.spells["spells"]]:
+          if not [i for i in self.spells["spells"] if i[0] == prereq]:
+            get_prereq = [i for i in SPELL_LIST if i[0] in prereq]
             check = False; break
-          
+
         # This prerequisite requires x amount of spells in a college
         elif "++" in prereq:
           if not self.spells["spells"]: check = False; break
@@ -834,16 +856,30 @@ class CharacterBuilder:
                 if "Earth" in spell[3]:
                   counter += 1
               if counter < 4: check = False; break
-              
+
         # For a spell requiring x amount of spells in total
         elif "other" in prereq:
           number = int(prereq.split(" ")[0])
           if number > len(self.spells["spells"]):
             check = False; break
+
+      # We have a spell that passes all prerequisite checks, adding it and all done
       if check:
         limiter += 50
         spell_choice = self.setSkillLevel(potential_spell[:])
         self.spells["spells"].append(spell_choice)
+      else:
+        needs_prereq = potential_spell
+        potential_spell = []
+
+    # Grabs prereq spell (pulled from loop to prevent picking trees of spells at a time)
+    if needs_prereq:
+      try:
+        self.fool_me["speller"][needs_prereq[0]] += 1
+      except KeyError:
+        self.fool_me["speller"][needs_prereq[0]] = 1
+      if get_prereq and self.misc["spent_points"] > -3:
+        self.pickSpell(get_prereq[0], 9)
 
   @Memoize
   def generatePsiPowers(self):
@@ -883,7 +919,7 @@ class CharacterBuilder:
         picked = random.choice(available)
         if len(psionic_talents) < 6:
           psionic_talents.append("Antipsi")
-        points = round(parse(picked[3]) * .9) # Sets points and applies psionic 10% discount
+        points = int(round(parse(picked[3]) * .9)) # Sets points and applies psionic 10% discount
         if points > self.misc["spent_points"] + 3:
           continue
         else:
@@ -913,6 +949,8 @@ class CharacterBuilder:
     counter = 0
     psionic_powers = ["Antipsi", "Esp", "Psychic Healing",
                       "Psychokinesis", "Telepathy", "Teleportation"]
+    stop_picking_spells = False
+    stop_skills = 0
     while self.misc["spent_points"] > 0 and counter < 1000:
       counter +=1
       if counter > 998:Print("out of control while loop line 809")
@@ -934,13 +972,15 @@ class CharacterBuilder:
           i in psionic_powers for i in self.skills["categories"]):
         if self.misc["spent_points"] > 5:
           self.pickPsi()
-      elif choice > 100:
+      # Add a spell
+      elif choice > 100 and not stop_picking_spells:
         Print("points left:",self.misc["spent_points"], "picking SPELL")
-        self.pickSpell()
+        stop_picking_spells = self.pickSpell()
       # Add a skill
-      elif choice < 90 and self.skills["skill_limit"] > skill_points:
+      elif stop_skills < 10 and choice < 90 and self.skills["skill_limit"] > skill_points:
         raw_skill = self.pickSkill()
         if not raw_skill:
+          stop_skills += 1
           Print("attempted to pick skill and failed")
           continue
         Print("points left:",self.misc["spent_points"], "just picked a skill")

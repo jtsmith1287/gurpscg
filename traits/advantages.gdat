@@ -32,7 +32,7 @@
 ['Channeling', 'M', 'Sup', '10', '41', [0, 13], ['Psionic', 'Esp', 'Esoteric', 'Occult']]
 ['Charisma', 'M', '-', '5/level', '41', [0, 13], ['Social', 'Leadership', 'Business']]
 ['Chronolocation', 'M', '-', '5', '35', [0, 13], ['Knowledge']]
-['Claim to Hospitality', 'Soc', '-', '1/level---10', '41', [0, 13], []]
+['Claim to Hospitality', 'Soc', '-', '1 + 1/level---10', '41', [0, 13], []]
 ['Clairsentience', 'M', 'Sup', '50', '42', [0, 13], ['Psionic', 'Esp']]
 ['Claws(consult book)', 'P', 'X', 'Variable===3', '42', [0, 13], []]
 ['Clerical Investment', 'Soc', '-', '5', '43', [0, 13], []]
