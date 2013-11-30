@@ -37,10 +37,10 @@ class Utilities:
       if row[0] == row_name:
         return row
 
-  def randWeight(self, array, dice=3):
+  def randWeight(self, array, dice=3, min=0):
     """Returns a random index simulating a dice roll."""
 
-    return int(sum([random.randint(0, len(array)-1) for unused in xrange(dice)])/dice)
+    return int(sum([random.randint(min, len(array)-1) for unused in xrange(dice)])/dice)
   
   def randBiDistrib(self, array, median):
     """Returns a random index using binomial distribution."""

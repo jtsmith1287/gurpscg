@@ -29,7 +29,7 @@ class CharacterBuilder:
     self.misc = {"total_points": form_data["points"],
                  "spent_points": form_data["points"],
                  "build": None,
-                 "age": utils.randBiDistrib(range(18, 65), 28),
+                 "age": utils.randWeight(range(18, 65), 2, 18),
                  "gender": random.choice(["Male", "Female"]),
                  "TL": form_data["tl"]}
     self.basic_attributes = {"ST": 10, "DX": 10,   "IQ": 10,  "HT": 10,
@@ -759,7 +759,7 @@ class CharacterBuilder:
     # Some spells keep getting picked but prereqs can't be met
     not_gonna_happen = []
     for spell_name, times_picked in self.fool_me["speller"].items():
-      if times_picked > 4:
+      if times_picked > 8:
         not_gonna_happen.append(spell_name)
     if potential_spell and potential_spell[0] in not_gonna_happen:
       potential_spell = []
@@ -814,6 +814,7 @@ class CharacterBuilder:
           if not self.spells["spells"]: check = False; break
           if not [i for i in self.spells["spells"] if i[0] == prereq]:
             get_prereq = [i for i in SPELL_LIST if i[0] in prereq]
+            needs_prereq = potential_spell
             check = False; break
 
         # This prerequisite requires x amount of spells in a college
@@ -869,7 +870,6 @@ class CharacterBuilder:
         spell_choice = self.setSkillLevel(potential_spell[:])
         self.spells["spells"].append(spell_choice)
       else:
-        needs_prereq = potential_spell
         potential_spell = []
 
     # Grabs prereq spell (pulled from loop to prevent picking trees of spells at a time)
@@ -968,7 +968,7 @@ class CharacterBuilder:
         if not first_skill: continue
         self.skills["skills"].append(first_skill)
       # Add a psionic power
-      elif choice > 95 and choice < 101 and any(
+      elif choice > 95 and choice < 100 and any(
           i in psionic_powers for i in self.skills["categories"]):
         if self.misc["spent_points"] > 5:
           self.pickPsi()
@@ -977,7 +977,7 @@ class CharacterBuilder:
         Print("points left:",self.misc["spent_points"], "picking SPELL")
         stop_picking_spells = self.pickSpell()
       # Add a skill
-      elif stop_skills < 10 and choice < 90 and self.skills["skill_limit"] > skill_points:
+      elif stop_skills < 10 and choice < 89 and self.skills["skill_limit"] > skill_points:
         raw_skill = self.pickSkill()
         if not raw_skill:
           stop_skills += 1
@@ -986,7 +986,7 @@ class CharacterBuilder:
         Print("points left:",self.misc["spent_points"], "just picked a skill")
         self.skills["skills"].append(raw_skill)
       # Increase a stat
-      elif (choice > 89) and (choice < 93) and spend_limit > 10:
+      elif (choice > 88) and (choice < 93) and spend_limit > 10:
         Print("points left:",self.misc["spent_points"], "raising stat")
         self.increaseRandomAttribute()
       # Add an advantage

@@ -169,7 +169,7 @@
 ['Group Performance (Fight Choreography)', 'IQ', 'A', [2, 13], ['Stage Combat', 'Diplomacy or Intimidation or Leadership'], '198', ['Arts', 'Entertainment', 'Social']]
 ['Gunner/TL (Beams)', 'DX', 'E', [10, 13], [], '198', ['Military', 'Combat']]
 ['Gunner/TL (Cannon)', 'DX', 'E', [4, 13], [], '198', ['Military', 'Combat']]
-['Gunner/TL (Catapult)', 'DX', 'E', [2, 13], [], '198', ['Military', 'Combat']]
+['Gunner/TL (Catapult)', 'DX', 'E', [2, 5], [], '198', ['Military', 'Combat']]
 ['Gunner/TL (Machine Gun)', 'DX', 'E', [6, 13], [], '198', ['Military', 'Combat']]
 ['Gunner/TL (Rockets)', 'DX', 'E', [7, 13], [], '198', ['Military', 'Combat']]
 ['Guns/TL (Grenade Launcher)', 'DX', 'E', [7, 13], [], '198', ['Ranged Weapon', 'Military', 'Combat']]
